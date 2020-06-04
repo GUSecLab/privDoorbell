@@ -1,0 +1,6 @@
+numpy
+opencv-utils
+imtuils
+opencv-python
+flask
+firebase-admin
