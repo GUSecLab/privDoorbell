@@ -40,7 +40,10 @@ class AESCipher(object):
         return self.bytesToBase64(ciphertext), self.bytesToBase64(tag)
 
     def getIV(self):
-        return self.iv        
+        return self.iv
+
+    def getIV_base64(self):
+        return self.bytesToBase64(iv)
 
     @staticmethod
     def bytesToBase64(byteString):

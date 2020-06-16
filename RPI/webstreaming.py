@@ -31,11 +31,17 @@ if stream:
 else:
     vs = VideoStream(src=0).start()
 
-def send_to_token(token: str):
+def send_to_token(token: str, type='face'):
+    with open("conf.txt") as f:
+        seed = f.read()
+    HMACMachine = HMACSHA256(seed, "1")
+    AESMachine = AESCipher(HMACMachine.getBinDigest())
+
     message = messaging.Message(
         data={
-            'type': 'face',
-            'timestamp': str(time.time)
+            'type': AESMachine.encrypt_base64(type),
+            'iv': AESMachine.getIV_base64(),
+            'timestamp': str(time.time())
         },
         token=token,
     )
@@ -49,15 +55,29 @@ firebase_admin.initialize_app(cred)
 def index():
     return render_template("index.html")
 
-@app.route("/configure")
-def configure():
-    with open("conf.txt") as f:
-        s = f.read()
-        if s:
-            return s
+@app.route("/bell", methods = ['GET'])
+def bell():
+    global token
+    for t in token:
+        send_to_token(t, 'bell')
+
+@app.route("/manageToken", methods = ['POST, GET'])
+def manageToken():
+    global token
+    if request.method == 'POST':
+        print("Start recving post")
+        data = request.form.to_dict()
+        print(data, flush=True)
+        to_delete = data['delete']
+        if to_delete in token:
+            token.remove(to_delete)
+
+    elif request.method == 'GET':
+        if token:
+            return str(token)
         else:
-            return 0
-    return 0
+            return "None"
+
 
 @app.route("/register", methods = ['POST', 'GET'])
 def register():
