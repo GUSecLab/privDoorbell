@@ -35,6 +35,7 @@ def send_to_token(token: str, type='face'):
     with open("conf.txt") as f:
         seed = f.read()
     HMACMachine = HMACSHA256(seed, "1")
+    print(AESCipher.bytesToBase64(HMACMachine.getBinDigest()))
     AESMachine = AESCipher(HMACMachine.getBinDigest())
 
     ciphertext, tag = AESMachine.encrypt_base64(type)
@@ -182,9 +183,10 @@ def detect_face(frameCount):
             if (time.time() - cur_time > 30) and token:
                 for t in token:
                     send_to_token(t)
+                print("Message sent.", flush=True)
                 cur_time = time.time()
             else:
-                print(time.time() - cur_time, token)
+                print(time.time() - cur_time)
             
         with outputFrame_lock:
             outputFrame = frame.copy()
