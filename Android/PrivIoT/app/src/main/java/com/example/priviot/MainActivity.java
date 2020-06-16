@@ -67,7 +67,8 @@ public class MainActivity extends Activity implements OnClickListener {
     private final static String LOG_TAG = CLASS_LABEL;
     /* Local storage */
     // private String ffmpeg_link = Environment.getExternalStorageDirectory().getPath() +  "/stream.flv";
-    private String ffmpeg_link = "rtmp://priviot.cs-georgetown.net:1935/live/mystream";
+    // private String ffmpeg_link = "rtmp://priviot.cs-georgetown.net:1935/live/mystream";
+    private String ffmpeg_link = "rtmp://192.168.0.4:1935/live/mystream";
 
     long startTime = 0;
     boolean recording = false;
@@ -81,10 +82,17 @@ public class MainActivity extends Activity implements OnClickListener {
     private String filterString = "";
     FFmpegFrameFilter filter;
 
+
     private int sampleAudioRateInHz = 44100;
     private int imageWidth = 320;
     private int imageHeight = 240;
     private int frameRate = 30;
+
+    // New settings for reduce CPU usage
+    /*private int sampleAudioRateInHz = 44100;
+    private int imageWidth = 320;
+    private int imageHeight = 240;
+    private int frameRate = 10;*/
 
     /* audio data getting thread */
     private AudioRecord audioRecord;
@@ -237,7 +245,9 @@ public class MainActivity extends Activity implements OnClickListener {
 
         // The filterString  is any ffmpeg filter.
         // Here is the link for a list: https://ffmpeg.org/ffmpeg-filters.html
-        filterString = "transpose=2,crop=w=200:h=200:x=0:y=0";
+        filterString = "transpose=1,crop=w=200:h=200:x=0:y=0";
+        // Try another transpose value
+        // filterString = "transpose=1";
         filter = new FFmpegFrameFilter(filterString, imageWidth, imageHeight);
 
         //default format on android
@@ -517,6 +527,7 @@ public class MainActivity extends Activity implements OnClickListener {
                 mCamera.setPreviewCallback(null);
             } catch (RuntimeException e) {
                 // The camera has probably just been released, ignore.
+                Log.d(LOG_TAG, "Placeholder in surfaceDestroyed()");
             }
         }
 
