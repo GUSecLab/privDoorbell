@@ -37,9 +37,12 @@ def send_to_token(token: str, type='face'):
     HMACMachine = HMACSHA256(seed, "1")
     AESMachine = AESCipher(HMACMachine.getBinDigest())
 
+    ciphertext, tag = AESMachine.encrypt_base64(type)
+
     message = messaging.Message(
         data={
-            'type': AESMachine.encrypt_base64(type),
+            'type': ciphertext,
+            'tag': tag,
             'iv': AESMachine.getIV_base64(),
             'timestamp': str(time.time())
         },
@@ -146,7 +149,7 @@ def detect_face(frameCount):
     
     fd = OpenCVDetector()
     total = 0
-    cur_time = time.time()
+    cur_time = time.time() - 15
 
     while True:
         num_faces = 0
