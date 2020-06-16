@@ -157,7 +157,8 @@ def detect_face(frameCount):
 
         if num_faces:
             if (time.time() - cur_time > 30) and token:
-                send_to_token(token)
+                for t in token:
+                    send_to_token(t)
                 cur_time = time.time()
             else:
                 print(time.time() - cur_time, token)
@@ -199,5 +200,5 @@ if __name__ == "__main__":
 
     app.run(host = args["ip"], port = args["port"], debug=True, threaded=True, use_reloader=False)
 
-if stream:
+if not stream:
     vs.stop()
