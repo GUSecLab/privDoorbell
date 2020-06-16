@@ -1,5 +1,6 @@
 from detectors.motion_detection.singlemotiondetector import SingleMotionDetector
 from detectors.face_detection.opencv_detection import OpenCVDetector
+from cryptoutils import HMACSHA256, AESCipher
 
 import threading
 import argparse
@@ -15,7 +16,7 @@ from firebase_admin import credentials, messaging
 
 outputFrame = None
 stream = True
-token = None
+token = []
 outputFrame_lock = threading.Lock()
 notification_lock = threading.Lock()
 
@@ -23,7 +24,7 @@ app = Flask(__name__)
 
 #vs = VideoStream(src=0).start()
 #time.sleep(2.0)
-rtmp_addr = 'rtmp://priviot.cs-georgetown.net:1935/live/mystream'
+rtmp_addr = 'rtmp://127.0.0.1:1935/live/mystream'
 
 if stream:
     vs = cv2.VideoCapture(rtmp_addr)
@@ -33,7 +34,8 @@ else:
 def send_to_token(token: str):
     message = messaging.Message(
         data={
-            'score': '850',
+            'type': 'face',
+            'timestamp': str(time.time)
         },
         token=token,
     )
@@ -47,6 +49,16 @@ firebase_admin.initialize_app(cred)
 def index():
     return render_template("index.html")
 
+@app.route("/configure")
+def configure():
+    with open("conf.txt") as f:
+        s = f.read()
+        if s:
+            return s
+        else:
+            return 0
+    return 0
+
 @app.route("/register", methods = ['POST', 'GET'])
 def register():
     global token
@@ -54,12 +66,18 @@ def register():
         print("Start recving post")
         data = request.form.to_dict()
         print(data, flush=True)
-        for k, v in data.items():
-            token = k
-        return 'Comfirmed'
+        with open("conf.txt") as f:
+            s = f.read()
+            if s:
+                for k, v in data.items():
+                    token.append(k)
+                return s
+            else:
+                return 0
+        return 0
     elif request.method == 'GET':
         if token:
-            return token
+            return str(token)
         else:
             return "None"
 
