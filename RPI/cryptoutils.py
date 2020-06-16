@@ -55,7 +55,7 @@ class AESCipher(object):
         return self.iv
 
     def getIV_base64(self):
-        return self.bytesToBase64(iv)
+        return self.bytesToBase64(self.iv)
 
     @staticmethod
     def bytesToBase64(byteString):
