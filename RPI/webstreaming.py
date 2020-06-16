@@ -94,7 +94,8 @@ def register():
             s = f.read()
             if s:
                 for k, v in data.items():
-                    token.append(k)
+                    if k not in token:
+                        token.append(k)
                 return s
             else:
                 return 0
