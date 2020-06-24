@@ -14,7 +14,7 @@ class TokenList(object):
 
     def delete(self, token: str):
         if token in self.d:
-            del self.d[token]
+            self.d.pop(token)
 
     def getList(self):
         return [k for k, v in self.d.items()]
