@@ -73,9 +73,9 @@ def manageToken():
         return render_template("token_management.html", tokens = tokens.getList())
     elif request.method == 'POST':
         print(request.form.to_dict(), flush=True)
-        for _, v in request.form.to_dict().items():
-            print(v)
-            tokens.delete(v)
+        for k, v in request.form.to_dict().items():
+            print(k)
+            tokens.delete(k)
         return render_template("token_management_confirmed.html")
 
 
