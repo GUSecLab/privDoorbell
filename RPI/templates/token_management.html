@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<title>Token Management Page</title>
+
+
+<body>
+
+    <h1>PrivDoorbell - Token management</h1>
+
+    {% if tokens == "None": %}
+    <h3>No tokens registered.</h3>
+    {% else %}
+
+    <ul>
+        {% for token in tokens: %}
+        <li>
+            {{ token }}
+            <form action="" method="post">
+                <input type="submit" name={{ token }} value="delete" />
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+
+    {% endif %}
+
+
+
+
+</body>
+
+
+
+</html>

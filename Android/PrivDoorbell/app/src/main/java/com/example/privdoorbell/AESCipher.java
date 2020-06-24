@@ -26,14 +26,12 @@ import com.example.privdoorbell.HMAC;
 public class AESCipher {
     public static final String LOG_TAG = "AESCipher";
 
-    public static final int AES_KEY_SIZE = 256;
+    // public static final int AES_KEY_SIZE = 256;
     public static final int GCM_IV_LENGTH = 12;
     public static final int GCM_TAG_LENGTH = 16;
 
 
-    public static final BigInteger KEY_SEED = new BigInteger("281742777473543518207051811201009247628");
-    KeyGenerator keyGenerator;
-    Cipher AES;
+    // public static final BigInteger KEY_SEED = new BigInteger("281742777473543518207051811201009247628");
     byte[] IV;
     SecretKey existingKey;
     public AESCipher(byte[] key, byte[] existing_iv){
@@ -87,11 +85,24 @@ public class AESCipher {
         return new String(plainText);
     }
 
-    // Untested functions
+    /**
+     * The decryption function when the ciphertext is delivered
+     * separately with tag.
+     */
+    public String decryptWithTag(byte[] cipherText, byte[] tag, byte[] IV) throws NoSuchPaddingException, InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+        return this.decrypt(CryptoHelper.combineByteArrays(cipherText, tag), IV);
+    }
+
+    /**
+     * Extract tag from java-style AES-GCM ciphertext.
+     */
     public static byte[] getTagFromCipherText(byte[] ciphertext) {
         return Arrays.copyOfRange(ciphertext, ciphertext.length - (GCM_TAG_LENGTH), ciphertext.length);
     }
 
+    /**
+     * Extract ciphertext body from java-style AES-GCM ciphertext.
+     */
     public static byte[] getRawCipherText(byte[] ciphertext) {
         return Arrays.copyOfRange(ciphertext, 0, ciphertext.length - (GCM_TAG_LENGTH));
     }

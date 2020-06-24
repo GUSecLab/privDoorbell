@@ -1,7 +1,9 @@
 package com.example.privdoorbell;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.net.wifi.WifiManager;
@@ -19,6 +21,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 
 import android.os.Build;
 import android.app.NotificationChannel;
@@ -33,6 +36,8 @@ import com.example.privdoorbell.FirebaseMessageService;
 import com.example.privdoorbell.FirebaseMessageService.PostCall;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
+
+import org.slf4j.spi.LocationAwareLogger;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -58,11 +63,29 @@ public class MainActivity extends AppCompatActivity {
 
     public final static String HARDCODE_RPI_ADDRESS = "http://192.168.0.4:8080/register";
 
+    /* Initialization for NSD */
+    NSDDiscover nsdHelper;
+    JmDNSService JmDNSDiscover;
+
+    /* Permissions */
+    private final int PERMISSION_ALL = 1;
+    String[] PERMISSIONS = {
+            Manifest.permission.ACCESS_WIFI_STATE,
+            Manifest.permission.INTERNET,
+            Manifest.permission.ACCESS_NETWORK_STATE,
+            Manifest.permission.CHANGE_WIFI_MULTICAST_STATE,
+            Manifest.permission.ACCESS_FINE_LOCATION
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        /* Check permissions */
+        if (!hasPermissions(MainActivity.this, PERMISSIONS)) {
+            ActivityCompat.requestPermissions(MainActivity.this, PERMISSIONS, PERMISSION_ALL);
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Create channel to show notifications.
@@ -74,17 +97,58 @@ public class MainActivity extends AppCompatActivity {
                     channelName, NotificationManager.IMPORTANCE_LOW));
         }
 
+        nsdHelper = new NSDDiscover(this);
     }
 
     @Override
-    protected void onStart(){
+    protected void onStart() {
         super.onStart();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (nsdHelper != null) {
+            nsdHelper.teardown();
+        }
+        if (JmDNSDiscover != null) {
+            JmDNSDiscover.onPostExecute("0");
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (nsdHelper != null) {
+            nsdHelper.teardown();
+        }
+        if (JmDNSDiscover != null) {
+            JmDNSDiscover.onPostExecute("0");
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        /* Placeholder; the app is going to crash if not granted permissions */
+        assert true;
+    }
 
     public void switchToStreaming(View view) {
         Intent intent = new Intent(this, StreamingActivity.class);
         startActivity(intent);
+    }
+
+    public static boolean hasPermissions(Context context, String... permissions) {
+        /* Helper function, checking permissions listed in PERMISSIONS */
+        if (context != null && permissions != null){
+            for (String permission: permissions) {
+                if (ActivityCompat.checkSelfPermission(context,
+                        permission) != PackageManager.PERMISSION_GRANTED){
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public void registerToServer(View view) {
@@ -183,7 +247,9 @@ public class MainActivity extends AppCompatActivity {
 
         protected void onPostExecute(String result) {
             Log.v(LOG_TAG, "Received: " + result);
-
+            if (result == null) {
+                Toast.makeText(MainActivity.this, "Registration failed! Please retry.", Toast.LENGTH_SHORT).show();
+            }
             writeToInternalFile("seed.conf", result);
         }
 
@@ -225,9 +291,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void sendRegistrationToServer(String token){
+        if (nsdHelper == null) {
+            Log.e(LOG_TAG, "sendRegistrationToServer(): nsdHelper has shut down.");
+            toastHelper("mDNS service is not running!");
+            return;
+        }
+        String targetURL = nsdHelper.getResolvedHostname();
+
+        if (targetURL == null) {
+            Log.e(LOG_TAG, "sendRegistrationToServer(): failed to get hostname. ");
+            toastHelper("Doorbell device not found; please try later.");
+            return;
+        }
+
+        targetURL = constructRegisterAddress(targetURL);
+
+
         Log.i(LOG_TAG, "Registering to server...");
-        //String targetURL = "http://priviot.cs-georgetown.net:8080/register";
-        String targetURL = HARDCODE_RPI_ADDRESS;
+        // String targetURL = "http://priviot.cs-georgetown.net:8080/register";
+        // targetURL = HARDCODE_RPI_ADDRESS;
 
 
         new PostCall().execute(targetURL, token);
@@ -237,7 +319,7 @@ public class MainActivity extends AppCompatActivity {
         Log.i(LOG_TAG, "Seed: " + seed);
     }
 
-    public void testFunc(View view) {
+    public void testFunc3(View view) {
         String key = "281742777473543518207051811201009247628";
         String data = "Crimson Humble God";
         HMAC HMACMachine = new HMAC(key, data);
@@ -286,4 +368,32 @@ public class MainActivity extends AppCompatActivity {
             Log.e(LOG_TAG, "Error in decryption: " + e.getMessage());
         }
     }
+
+    public void testFunc(View view) {
+        JmDNSDiscover = new JmDNSService();
+        JmDNSDiscover.doInBackground(this);
+    }
+
+    /**
+     * Convert the hostname string to useful registration URL.
+     * @param hostname Hostname string. Format is "/x.x.x.x".
+     *                 Either get it from serviceInfo.getHost()
+     *                 or pass in a string that fits the format.
+     *                 The function itself doesn't check the format.
+     * @return "http://x.x.x.x/register"
+     *
+     */
+    public String constructRegisterAddress(String hostname) {
+        Log.i(LOG_TAG, "registeraddress: " + "http://" + hostname + "/register");
+        return "http:/" + hostname + "/register";
+    }
+
+    /**
+     * A helper function for toasting messages.
+     * Equals to Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+     */
+    public void toastHelper(String message) {
+        Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+    }
+
 }

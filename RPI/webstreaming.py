@@ -1,6 +1,7 @@
 from detectors.motion_detection.singlemotiondetector import SingleMotionDetector
 from detectors.face_detection.opencv_detection import OpenCVDetector
 from cryptoutils import HMACSHA256, AESCipher
+from tokenList import TokenList
 
 import threading
 import argparse
@@ -16,7 +17,7 @@ from firebase_admin import credentials, messaging
 
 outputFrame = None
 stream = True
-token = []
+tokens = TokenList()
 outputFrame_lock = threading.Lock()
 notification_lock = threading.Lock()
 
@@ -61,50 +62,37 @@ def index():
 
 @app.route("/bell", methods = ['GET'])
 def bell():
-    global token
-    for t in token:
+    global tokens
+    for t in tokens.getList():
         send_to_token(t, 'bell')
 
-@app.route("/manageToken", methods = ['POST, GET'])
+@app.route("/manageToken", methods = ['POST', 'GET'])
 def manageToken():
-    global token
-    if request.method == 'POST':
-        print("Start recving post")
-        data = request.form.to_dict()
-        print(data, flush=True)
-        to_delete = data['delete']
-        if to_delete in token:
-            token.remove(to_delete)
-
-    elif request.method == 'GET':
-        if token:
-            return str(token)
-        else:
-            return "None"
+    global tokens
+    if request.method == 'GET':
+        return render_template("token_management.html", tokens = tokens)
+    elif request.method == 'POST':
+        print(request.form.to_dict(), flush=True)
+        for _, v in request.form.to_dict():
+            tokens.delete(v)
+        return render_template("token_management_confirmed.html")
 
 
-@app.route("/register", methods = ['POST', 'GET'])
+@app.route("/register", methods = ['POST'])
 def register():
-    global token
-    if request.method == 'POST':
-        print("Start recving post")
-        data = request.form.to_dict()
-        print(data, flush=True)
-        with open("conf.txt") as f:
-            s = f.read()
-            if s:
-                for k, v in data.items():
-                    if k not in token:
-                        token.append(k)
-                return s
-            else:
-                return 0
-        return 0
-    elif request.method == 'GET':
-        if token:
-            return str(token)
+    global tokens
+    print("Start recving post")
+    data = request.form.to_dict()
+    print(data, flush=True)
+    with open("conf.txt") as f:
+        s = f.read()
+        if s:
+            for k, v in data.items():
+                tokens.insert(k, time.time())
+            return s
         else:
-            return "None"
+            return 0
+    return 0
 
 @app.route("/video_feed")
 def video_feed():
@@ -181,8 +169,8 @@ def detect_face(frameCount):
         total += 1
 
         if num_faces:
-            if (time.time() - cur_time > 30) and token:
-                for t in token:
+            if (time.time() - cur_time > 30) and not tokens.isEmpty():
+                for t in tokens.getList():
                     send_to_token(t)
                 print("Message sent.", flush=True)
                 cur_time = time.time()

@@ -45,4 +45,8 @@ dependencies {
 
     implementation 'org.videolan.android:libvlc-all:3.3.0-eap12'
     implementation 'info.guardianproject.netcipher:netcipher:2.1.0'
+
+    implementation 'org.jmdns:jmdns:3.5.1'
+
+    implementation 'org.slf4j:slf4j-simple:1.7.25'
 }

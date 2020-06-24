@@ -5,7 +5,7 @@ import random
 import secrets
 
 key = '281742777473543518207051811201009247628'
-msg = 'Crimson Humble God'
+msg = 'CHG'
 
 class HMACSHA256(object):
 

@@ -24,8 +24,8 @@ public class StreamingActivity extends AppCompatActivity {
 
 
 
-    private static String streaming_url = "rtmp://priviot.cs-georgetown.net:1935/vod/test.flv";
-    //private static String streaming_url = "rtmp://3ng7mtk5nguqcmpas2l3o4gdrclyxb7e23yzp3xjasd2owm7vwhuyvad.onion:1935/vod/test.flv";
+    // private static String streaming_url = "rtmp://priviot.cs-georgetown.net:1935/vod/test.flv";
+    private static String streaming_url = "http://s2py4nxpsb2il2gg2y5uvibvbue57wi2hqo4ncbxmka7zyl3ab5tkdid.onion:8000/live?port=1935&app=live&stream=mystream";
 
     private VLCVideoLayout mVideoLayout = null;
 
@@ -44,7 +44,7 @@ public class StreamingActivity extends AppCompatActivity {
         final ArrayList<String> args = new ArrayList<>();
         args.add("-vvv");
         // The proxy settings in VLC don't seem working
-        //args.add("--socks=127.0.0.1:9050");
+        args.add("--socks=127.0.0.1:9050");
         //args.add("--http-proxy=http://127.0.0.1:8118/");
         mLibVLC = new LibVLC(this, args);
         mMediaPlayer = new MediaPlayer(mLibVLC);

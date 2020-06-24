@@ -31,36 +31,66 @@ import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
+import com.example.privdoorbell.AESCipher;
+import com.example.privdoorbell.HMAC;
+import com.example.privdoorbell.CryptoHelper;
 
 public class FirebaseMessageService extends FirebaseMessagingService{
     private static final String LOG_TAG = "FirebaseMessagingService";
     protected String key = "";
     public final static String HARDCODE_RPI_ADDRESS = "http://192.168.0.4:8080/register";
+    public final static String HARDCODE_FIRST_KEY_STR = "1";
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage){
         // Receives the message, source: Github - firebase - quickstart-android
         // Diff between Notification & Data msg: https://firebase.google.com/docs/cloud-messaging/concept-options
 
+        byte[] ciphertext_bytes = null;
+        byte[] iv_bytes = null;
+        byte[] tag_bytes = null;
+        String type_plaintext = null;
+        String seed = readStringFromInternalFile("seed.conf");
+
+        if (seed == null) {
+            return;
+        }
+
+        HMAC HMACMachine = new HMAC(seed, HARDCODE_FIRST_KEY_STR);
+
         Log.d(LOG_TAG, "From: " + remoteMessage.getFrom());
 
         // Check message type
         if (remoteMessage.getData().size() > 0) {
             Log.d(LOG_TAG, "Message data payload: " + remoteMessage.getData());
+            ciphertext_bytes = CryptoHelper.base64ToBytes(remoteMessage.getData().get("type"));
+            tag_bytes = CryptoHelper.base64ToBytes(remoteMessage.getData().get("tag"));
+            iv_bytes = CryptoHelper.base64ToBytes(remoteMessage.getData().get("iv"));
         }
 
+        byte[] aes_key = HMACMachine.calcHmacSha256();
+        Log.i(LOG_TAG, "AES key: " + CryptoHelper.bytesToBase64(aes_key));
+        AESCipher AESDecrypter = new AESCipher(aes_key, iv_bytes);
+        try {
+            type_plaintext = AESDecrypter.decryptWithTag(ciphertext_bytes, tag_bytes, iv_bytes);
+            Log.i(LOG_TAG, "Received type: " + type_plaintext);
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "onMessageReceived(): Decryption failed.");
+        }
+
+
+        //
         if (remoteMessage.getNotification() != null){
             Log.d(LOG_TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
         }
+        //
 
-        // TODO: do something
-        sendNotification("Someone is at your door!");
+        if (type_plaintext.equals("face")) {
+            sendNotification("Someone is at your door!");
+        }
+        else if (type_plaintext.equals("bell")) {
+            sendNotification("Someone is pressing your bell!");
+        }
     }
 
     @Override
@@ -194,5 +224,26 @@ public class FirebaseMessageService extends FirebaseMessagingService{
 
         new PostCall().execute(targetURL, token);
         // Log.i(LOG_TAG, "Seed: " + seed);
+    }
+
+    protected String readStringFromInternalFile(String filename) {
+        File path = getFilesDir();
+        File file = new File(path, filename);
+
+        int length = (int) file.length();
+        byte[] bytes = new byte[length];
+        String contents = null;
+
+        try {
+            FileInputStream inS = new FileInputStream(file);
+            inS.read(bytes);
+            inS.close();
+
+            contents = new String(bytes);
+        } catch (Exception e) {
+            Log.e(LOG_TAG, e.getMessage());
+        }
+
+        return contents;
     }
 }

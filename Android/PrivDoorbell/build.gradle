@@ -11,7 +11,9 @@ buildscript {
         maven {
             url "https://dl.bintray.com/videolan/Android"
         }
-        
+        maven {
+            url "https://mvnrepository.com/artifact/org.jmdns/jmdns"
+        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.6.3'
