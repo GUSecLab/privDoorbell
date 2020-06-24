@@ -23,7 +23,7 @@ class TokenList(object):
         return str([k for k, v in self.d.items()])
     
     def isEmpty(self):
-        return bool(seld.d)
+        return bool(self.d)
 
 
 # Unit test
