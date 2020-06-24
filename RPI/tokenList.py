@@ -22,7 +22,7 @@ class TokenList(object):
     def __str__(self):
         return str([k for k, v in self.d.items()])
     
-    def ieEmpty(self):
+    def isEmpty(self):
         return bool(seld.d)
 
 
