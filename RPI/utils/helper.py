@@ -6,7 +6,7 @@ class StringHelper():
         pass
 
     @staticmethod
-    def extractFromPassedDict(d: dict) -> tuple[str]:
+    def extractFromPassedDict(d: dict):
         for k, v in d.items():
             json_string = k
         r = json.loads(json_string)
