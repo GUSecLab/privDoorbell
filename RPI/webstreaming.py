@@ -105,8 +105,8 @@ def register():
         
     token, nickname = StringHelper.extractFromPassedDict(data)
     tokens.insert(token, time.time(), nickname)
-    print("Returned" + s)
-    return s
+    print("Returned" + ret_msg)
+    return ret_msg
 
 @app.route("/video_feed")
 def video_feed():
