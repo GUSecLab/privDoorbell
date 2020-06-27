@@ -4,11 +4,10 @@ class TokenList(object):
 
     def __init__(self):
         self.d = dict()
-
     
-    def insert(self, token: str, timestamp: str):
+    def insert(self, token: str, timestamp: str, nickname = ""):
         if not token in self.d:
-            self.d[token] = timestamp
+            self.d[token] = (timestamp, nickname)
         else:
             pass
 

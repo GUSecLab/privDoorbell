@@ -32,14 +32,14 @@ if stream:
 else:
     vs = VideoStream(src=0).start()
 
-def send_to_token(token: str, type='face'):
+def send_to_token(token: str, msg_type='face'):
     with open("conf.txt") as f:
         seed = f.read()
     HMACMachine = HMACSHA256(seed, "1")
     print(AESCipher.bytesToBase64(HMACMachine.getBinDigest()))
     AESMachine = AESCipher(HMACMachine.getBinDigest())
 
-    ciphertext, tag = AESMachine.encrypt_base64(type)
+    ciphertext, tag = AESMachine.encrypt_base64(msg_type)
 
     message = messaging.Message(
         data={
@@ -85,15 +85,26 @@ def register():
     print("Start recving post")
     data = request.form.to_dict()
     print(data, flush=True)
-    with open("conf.txt") as f:
+
+    ret_msg = ""
+
+    with open("seed.conf") as f:
         s = f.read()
-        if s:
-            for k, v in data.items():
-                tokens.insert(k, time.time())
-            return s
-        else:
-            return 0
-    return 0
+    if not s:
+        return 0
+    else:
+        ret_msg += s
+    with open("hostname.conf") as f:
+        s = f.read()
+    if not s:
+        return 0
+    else:
+        ret_msg += s    
+        
+        
+    for k, v in data.items():
+        tokens.insert(k, time.time())
+    return s
 
 @app.route("/video_feed")
 def video_feed():
