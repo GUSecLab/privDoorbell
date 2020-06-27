@@ -2,6 +2,7 @@ from detectors.motion_detection.singlemotiondetector import SingleMotionDetector
 from detectors.face_detection.opencv_detection import OpenCVDetector
 from cryptoutils import HMACSHA256, AESCipher
 from tokenList import TokenList
+from utils.helper import StringHelper
 
 import threading
 import argparse
@@ -86,24 +87,25 @@ def register():
     data = request.form.to_dict()
     print(data, flush=True)
 
-    ret_msg = ""
+    # Delimiter
+    ret_msg = "---"
 
     with open("seed.conf") as f:
         s = f.read()
     if not s:
         return 0
     else:
-        ret_msg += s
+        ret_msg = s + ret_msg
     with open("hostname.conf") as f:
         s = f.read()
     if not s:
         return 0
     else:
-        ret_msg += s    
+        ret_msg = ret_msg + s
         
-        
-    for k, v in data.items():
-        tokens.insert(k, time.time())
+    token, nickname = StringHelper.extractFromPassedDict(data)
+    tokens.insert(token, time.time(), nickname)
+    print("Returned" + s)
     return s
 
 @app.route("/video_feed")
