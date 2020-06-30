@@ -10,10 +10,13 @@ public class Utils {
 
 
     public static List<String> splitResponseToSeedAndHostname(String res) {
+        if (res == null) {
+            throw new NullPointerException();
+        }
         List<String> list = new ArrayList<String>();
         if (! res.contains("---")) {
             Log.e(LOG_TAG, "The res string is incorrect.");
-            return list;
+            return null;
         }
         else {
             String[] parts = res.split("---");

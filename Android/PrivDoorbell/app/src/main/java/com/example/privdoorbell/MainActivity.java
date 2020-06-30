@@ -240,10 +240,16 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             Log.v(LOG_TAG, "Received: " + result);
             if (result == null) {
-                Toast.makeText(MainActivity.this, "Registration failed! Please retry.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Registration failed: illegal HTML response", Toast.LENGTH_SHORT).show();
+                return;
             }
             List<String> res_list = Utils.splitResponseToSeedAndHostname(result);
 
+            // If the string is not correct
+            if (res_list == null) {
+                toastHelper("Registration failed: invalid response");
+                return;
+            }
             writeToInternalFile("seed.conf", res_list.get(0));
             writeToInternalFile("hostname.conf", res_list.get(1));
         }
@@ -289,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
         getIdAndSendToServer(getNickname());
     }
 
-    public void getIdAndSendToServer(String nickname) {
+    public void getIdAndSendToServer(final String nickname) {
         // Do the actual registration work
         Log.i(LOG_TAG, "Start checking token...");
         FirebaseInstanceId.getInstance().getInstanceId()
@@ -309,7 +315,7 @@ public class MainActivity extends AppCompatActivity {
                         // Log and toast
                         // WARNING: The sendRegistrationToServer() function includes AsyncTask for
                         // POST request. No way to know if the task is over!
-                        sendRegistrationToServer(token, "Nickname");
+                        sendRegistrationToServer(token, nickname);
                         String msg = getString(R.string.msg_token_fmt, token);
                         // Log.d(LOG_TAG, "Token: " + token);
                         // Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
@@ -381,6 +387,7 @@ public class MainActivity extends AppCompatActivity {
 
     protected String getNickname() {
         TextInputLayout nicknameField = (TextInputLayout) findViewById(R.id.nicknameField);
+        Log.i(LOG_TAG, "nickname: " + nicknameField.getEditText().getText().toString());
         return nicknameField.getEditText().getText().toString();
     }
 }

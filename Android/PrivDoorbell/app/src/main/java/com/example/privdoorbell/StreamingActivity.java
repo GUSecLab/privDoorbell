@@ -59,7 +59,7 @@ public class StreamingActivity extends AppCompatActivity {
 
         final ArrayList<String> args = new ArrayList<>();
         args.add("-vvv");
-        //args.add("--socks=127.0.0.1:9050");
+        args.add("--socks=127.0.0.1:9050");
         //args.add("--http-proxy=http://127.0.0.1:8118/");
         mLibVLC = new LibVLC(this, args);
         mMediaPlayer = new MediaPlayer(mLibVLC);
@@ -83,13 +83,14 @@ public class StreamingActivity extends AppCompatActivity {
         mMediaPlayer.attachViews(mVideoLayout, null, ENABLE_SUBTITLES, USE_TEXTURE_VIEW);
 
         try {
-            System.setProperty("socksProxyHost", socks_host);
-            System.setProperty("socksProxyPort", socks_port);
-            Log.i(LOG_TAG, "Proxy set.");
+            //System.setProperty("socksProxyHost", socks_host);
+            //System.setProperty("socksProxyPort", socks_port);
             final Media media = new Media(mLibVLC, Uri.parse(streaming_url));
-            Log.i(LOG_TAG, "Got media link.");
+            //media.setHWDecoderEnabled(true, false);
+            //media.addOption(":network-caching=300");
+            //media.addOption(":clock-jitter=0");
+            //media.addOption(":clock-synchro=0");
             mMediaPlayer.setMedia(media);
-            Log.i(LOG_TAG, "Set media.");
             media.release();
         } catch (Exception e) {
             Log.e(LOG_TAG, e.getMessage());
