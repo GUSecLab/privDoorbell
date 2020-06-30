@@ -34,7 +34,7 @@ else:
     vs = VideoStream(src=0).start()
 
 def send_to_token(token: str, msg_type='face'):
-    with open("conf.txt") as f:
+    with open("seed.conf") as f:
         seed = f.read()
     HMACMachine = HMACSHA256(seed, "1")
     AESMachine = AESCipher(HMACMachine.getBinDigest())

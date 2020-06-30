@@ -4,7 +4,7 @@ from base64 import b64encode
 import random
 import secrets
 
-key = '281742777473543518207051811201009247628'
+key = '67132748186923924798719543436596703771'
 msg = 'CHG'
 
 class HMACSHA256(object):
@@ -64,7 +64,7 @@ class AESCipher(object):
 
 
 if __name__ == "__main__":
-    HMACMachine = HMACSHA256(key, msg)
+    HMACMachine = HMACSHA256(key, "1")
     new_key = HMACMachine.getBinDigest()
     aes = AESCipher(new_key)
 
