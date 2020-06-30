@@ -24,6 +24,9 @@ class TokenList(object):
     def isEmpty(self):
         return not bool(self.d)
 
+    def getDict(self):
+        return self.d
+
 
 # Unit test
 if __name__ == "__main__":
