@@ -13,6 +13,7 @@ import java.net.InetAddress;
 public class NSDDiscover {
     private final static String LOG_TAG = "NSDDiscover";
     public static final String SERVICE_TYPE = "_workstation._tcp.";
+    //public static final String SERVICE_TYPE = "_services._dns-sd._udp";
 
     String resolvedHostname;
 
@@ -115,9 +116,18 @@ public class NSDDiscover {
     }
 
     public void teardown() {
+        Log.i(LOG_TAG, "Shut down NSD");
         //nsdManager.unregisterService(registrationListener);
-        nsdManager.stopServiceDiscovery(discoveryListener);
-        multicastLock.release();
+
+        // This is a BAD way of handling exceptions!
+        // Try another approach if possible
+        try {
+            nsdManager.stopServiceDiscovery(discoveryListener);
+            multicastLock.release();
+        } catch (Exception e) {
+            Log.w(LOG_TAG, "teardown(): Failed to unregister listener! " + e.getMessage());
+        }
+
     }
 
     public String getResolvedHostname() {

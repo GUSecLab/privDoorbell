@@ -25,6 +25,30 @@
         android:gravity="center_horizontal"
         android:text="@string/quickstart_message" />
 
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/nicknameField"
+        android:layout_width="@dimen/standard_field_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:hint="Nickname">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/registrationButton"
+        android:layout_width="@dimen/standard_field_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:onClick="registerToServer"
+        android:text="@string/log_token" />
+
+
+
+
     <Button
         android:id="@+id/subscribeButton"
         android:layout_width="@dimen/standard_field_width"
@@ -33,14 +57,6 @@
         android:layout_marginTop="20dp"
         android:onClick="switchToStreaming"
         android:text="@string/subscribe_to_weather" />
-
-    <Button
-        android:id="@+id/logTokenButton"
-        android:layout_width="@dimen/standard_field_width"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:onClick="registerToServer"
-        android:text="@string/log_token" />
 
     <Button
         android:id="@+id/testButton"

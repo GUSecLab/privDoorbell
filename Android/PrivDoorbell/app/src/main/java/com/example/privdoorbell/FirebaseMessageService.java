@@ -30,10 +30,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 import com.example.privdoorbell.AESCipher;
 import com.example.privdoorbell.HMAC;
 import com.example.privdoorbell.CryptoHelper;
+
+import org.slf4j.helpers.Util;
 
 public class FirebaseMessageService extends FirebaseMessagingService{
     private static final String LOG_TAG = "FirebaseMessagingService";
@@ -58,7 +61,7 @@ public class FirebaseMessageService extends FirebaseMessagingService{
 
         HMAC HMACMachine = new HMAC(seed, HARDCODE_FIRST_KEY_STR);
 
-        Log.d(LOG_TAG, "From: " + remoteMessage.getFrom());
+        Log.d(LOG_TAG, "Seed: " + seed + " From: " + remoteMessage.getFrom());
 
         // Check message type
         if (remoteMessage.getData().size() > 0) {
@@ -76,6 +79,7 @@ public class FirebaseMessageService extends FirebaseMessagingService{
             Log.i(LOG_TAG, "Received type: " + type_plaintext);
         } catch (Exception e) {
             Log.e(LOG_TAG, "onMessageReceived(): Decryption failed.");
+            return;
         }
 
 
@@ -164,7 +168,11 @@ public class FirebaseMessageService extends FirebaseMessagingService{
 
         protected void onPostExecute(String result) {
             Log.v(LOG_TAG, "Received: " + result);
-            writeToInternalFile("seed.conf", result);
+
+            List<String> res_list = Utils.splitResponseToSeedAndHostname(result);
+
+            writeToInternalFile("seed.conf", res_list.get(0));
+            writeToInternalFile("hostname.conf", res_list.get(1));
         }
 
         protected void writeToInternalFile(String filename, String data) {
