@@ -80,7 +80,7 @@ def bell():
 def manageToken():
     global tokens
     if request.method == 'GET':
-        return render_template("token_management.html", tokens = tokens.getList())
+        return render_template("token_management.html", tokens = tokens)
     elif request.method == 'POST':
         print(request.form.to_dict(), flush=True)
         for k, v in request.form.to_dict().items():

@@ -13,13 +13,16 @@
     {% else %}
 
     <ul>
-        {% for token in tokens: %}
-        <li>
-            {{ token }}
+        {% for token, (timestamp, nickname) in tokens.items() %}
+        <tr>
+            <td>{{ token }}</td>
+            <td>
             <form action="" method="post">
                 <input type="submit" name={{ token }} value="delete" />
-            </form>
-        </li>
+            </form></td>
+            <td> {{ nickname }} </td>
+            <td> {{ timestamp }}</td>
+        </tr>>
         {% endfor %}
     </ul>
 
