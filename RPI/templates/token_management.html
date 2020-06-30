@@ -12,7 +12,7 @@
     <h3>No tokens registered.</h3>
     {% else %}
 
-    <ul>
+    <table>
         {% for token, (timestamp, nickname) in tokens.items() %}
         <tr>
             <td>{{ token }}</td>
@@ -22,9 +22,9 @@
             </form></td>
             <td> {{ nickname }} </td>
             <td> {{ timestamp }}</td>
-        </tr>>
+        </tr>
         {% endfor %}
-    </ul>
+    </table>
 
     {% endif %}
 
