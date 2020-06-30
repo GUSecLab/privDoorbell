@@ -34,8 +34,10 @@ else:
     vs = VideoStream(src=0).start()
 
 def send_to_token(token: str, msg_type='face'):
+    # Know what you are doing here! The read() method comes with a newline at the end
+    # Strip that or the server will be using a different key with the client
     with open("seed.conf") as f:
-        seed = f.read()
+        seed = f.read().strip()
     print("Seed: " + seed)
     HMACMachine = HMACSHA256(seed, "1")
     AESMachine = AESCipher(HMACMachine.getBinDigest())
