@@ -37,7 +37,6 @@ def send_to_token(token: str, msg_type='face'):
     with open("conf.txt") as f:
         seed = f.read()
     HMACMachine = HMACSHA256(seed, "1")
-    print(AESCipher.bytesToBase64(HMACMachine.getBinDigest()))
     AESMachine = AESCipher(HMACMachine.getBinDigest())
 
     ciphertext, tag = AESMachine.encrypt_base64(msg_type)
@@ -52,6 +51,13 @@ def send_to_token(token: str, msg_type='face'):
         token=token,
     )
     response = messaging.send(message)
+    print({
+        'AESKey': AESCipher.bytesToBase64(HMACMachine.getBinDigest()),
+        'type': ciphertext,
+        'tag': tag,
+        'iv': AESMachine.getIV_base64(),
+        'timestamp': str(time.time())     
+    })
     print('Attempted to send msg, res:', response, flush=True)
 
 cred = credentials.Certificate("privdoorbell-af796472f9a4.json")
