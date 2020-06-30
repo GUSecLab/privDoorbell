@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html>
-
+<head>
+    <style>
+        table, th, td {
+          border: 1px solid black;
+          border-collapse: collapse;
+          width: 80px;
+        }
+        </style>
+</head>
 <title>Token Management Page</title>
 
 
@@ -13,15 +21,22 @@
     {% else %}
 
     <table>
+        <tr>
+            <th>Token</th>
+            <th>Nickname</th>
+            <th>Timestamp</th>
+            <th>Operation</th>
+        </tr>
         {% for token, (timestamp, nickname) in tokens.items() %}
         <tr>
             <td>{{ token }}</td>
-            <td>
-            <form action="" method="post">
-                <input type="submit" name={{ token }} value="delete" />
-            </form></td>
             <td> {{ nickname }} </td>
             <td> {{ timestamp }}</td>
+            <td>
+                <form action="" method="post">
+                    <input type="submit" name={{ token }} value="delete" />
+                </form>
+            </td>
         </tr>
         {% endfor %}
     </table>
