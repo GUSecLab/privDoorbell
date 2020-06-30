@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 
 class TokenList(object):
 
@@ -7,7 +8,7 @@ class TokenList(object):
     
     def insert(self, token: str, timestamp: str, nickname = ""):
         if not token in self.d:
-            self.d[token] = (timestamp, nickname)
+            self.d[token] = (datetime.datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%dT%H:%M:%SZ'), nickname)
         else:
             pass
 
