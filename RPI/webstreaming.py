@@ -36,6 +36,7 @@ else:
 def send_to_token(token: str, msg_type='face'):
     with open("seed.conf") as f:
         seed = f.read()
+    print("Seed: " + seed)
     HMACMachine = HMACSHA256(seed, "1")
     AESMachine = AESCipher(HMACMachine.getBinDigest())
 
