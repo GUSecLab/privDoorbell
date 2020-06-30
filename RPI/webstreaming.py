@@ -8,6 +8,7 @@ import threading
 import argparse
 import datetime
 import time
+from random import SystemRandom
 
 import imutils
 from imutils.video import VideoStream
@@ -26,10 +27,11 @@ app = Flask(__name__)
 
 #vs = VideoStream(src=0).start()
 #time.sleep(2.0)
-rtmp_addr = 'rtmp://127.0.0.1:1935/live/mystream'
+RTMP_ADDR = 'rtmp://127.0.0.1:1935/live/mystream'
+DUMMY_PROB = 1e-1
 
 if stream:
-    vs = cv2.VideoCapture(rtmp_addr)
+    vs = cv2.VideoCapture(RTMP_ADDR)
 else:
     vs = VideoStream(src=0).start()
 
@@ -65,6 +67,17 @@ def send_to_token(token: str, msg_type='face'):
 
 cred = credentials.Certificate("privdoorbell-af796472f9a4.json")
 firebase_admin.initialize_app(cred)
+
+def send_dummy_packet():
+    print("Started dummy packet thread", flush=True)
+    starttime = time.time()
+    cryptogen = SystemRandom()
+    while True:
+        if cryptogen.random() < DUMMY_PROB and not tokens.isEmpty():
+            for t in tokens.getList():
+                send_to_token(t, "dummy")
+        time.sleep(60.0 - ((time.time() - starttime) % 60.0))
+        
 
 @app.route("/")
 def index():
@@ -228,12 +241,21 @@ if __name__ == "__main__":
     ap.add_argument("-d", "--detector", type=str, default='face')
     args = vars(ap.parse_args())
 
+    # Multi-thread tasking
+    
+    # The detector thread
     if args['detector'] == 'face':
-        t = threading.Thread(target = detect_face, args = (args["frame_count"], ))
+        detector_thread = threading.Thread(target = detect_face, args = (args["frame_count"], ))
     else:
-        t = threading.Thread(target = detect_motion, args = (args["frame_count"], ))
-    t.daemon = True
-    t.start()
+        detector_thread = threading.Thread(target = detect_motion, args = (args["frame_count"], ))
+    detector_thread.daemon = True
+    detector_thread.start()
+
+    # The dummy packet thread
+    dummy_thread = threading.Thread(target = send_dummy_packet)
+    dummy_thread.daemon = True
+    dummy_thread.start()
+
 
     app.run(host = args["ip"], port = args["port"], debug=True, threaded=True, use_reloader=False)
 
