@@ -11,7 +11,7 @@ class OpenCVDetector(object):
             gray,
             scaleFactor=1.3,
             minNeighbors=3,
-            minSize=(30, 30)
+            minSize=(50, 50)
         )
 
         return (len(faces), faces)

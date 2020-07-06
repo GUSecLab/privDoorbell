@@ -76,7 +76,7 @@ def send_dummy_packet():
         if cryptogen.random() < DUMMY_PROB and not tokens.isEmpty():
             for t in tokens.getList():
                 send_to_token(t, "dummy")
-        time.sleep(60.0 - ((time.time() - starttime) % 60.0))
+        time.sleep(int(180*cryptogen.random()))
         
 
 @app.route("/")
@@ -102,9 +102,11 @@ def manageToken():
         return render_template("token_management_confirmed.html")
 
 
-@app.route("/register", methods = ['POST'])
+@app.route("/register", methods = ['GET', 'POST'])
 def register():
     global tokens
+    if request.method == 'GET':
+        return render_template("token_management.html", tokens = tokens.getDict())
     print("Start recving post")
     data = request.form.to_dict()
     print(data, flush=True)
@@ -242,7 +244,7 @@ if __name__ == "__main__":
     args = vars(ap.parse_args())
 
     # Multi-thread tasking
-    
+
     # The detector thread
     if args['detector'] == 'face':
         detector_thread = threading.Thread(target = detect_face, args = (args["frame_count"], ))
