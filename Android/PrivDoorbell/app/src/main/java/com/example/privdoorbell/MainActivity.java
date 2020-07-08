@@ -1,48 +1,37 @@
 package com.example.privdoorbell;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.net.nsd.NsdManager;
-import android.net.nsd.NsdServiceInfo;
-import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.preference.PreferenceManager;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
-import com.google.firebase.messaging.FirebaseMessaging;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
-import android.os.Build;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.Button;
-import android.widget.Toast;
-import android.util.Log;
-
-import com.example.privdoorbell.FirebaseMessageService;
-import com.example.privdoorbell.FirebaseMessageService.PostCall;
-
-import com.google.firebase.messaging.FirebaseMessagingService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.spi.LocationAwareLogger;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -50,32 +39,32 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.List;
+
+import info.guardianproject.netcipher.proxy.OrbotHelper;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private final static String LOG_TAG = "MainActivity";
-    public static final String SERVICE_TYPE = "_services._dns-sd._udp";
+    // public static final String SERVICE_TYPE = "_services._dns-sd._udp";
 
-    public final static String HARDCODE_RPI_ADDRESS = "http://192.168.0.4:8080/register";
+    // public final static String HARDCODE_RPI_ADDRESS = "http://192.168.0.4:8080/register";
 
 
     public final static String LOCATION_PERMISSION = Manifest.permission.ACCESS_FINE_LOCATION;
     public final static int MY_PERMISSIONS_REQUEST_LOCATION = 255;
 
+    private FragmentManager fragmentManager;
+
     /* Initialization for NSD */
     NSDDiscover nsdHelper;
-    JmDNSService JmDNSDiscover;
 
 
     @Override
@@ -83,8 +72,40 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar_main);
+        setSupportActionBar(myToolbar);
 
+        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.action_register:
+                        switchToFragmentRegister();
+                        break;
+                    case R.id.action_streaming:
+                        switchToFragmentStreaming();
+                        break;
+                    case R.id.action_wifi:
+                        switchToFragmentWifi();
+                        break;
+                }
+                return true;
+            }
+        });
+
+
+        fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        MainFragment fragment1 = new MainFragment();
+        fragmentTransaction.add(R.id.fragment_main, fragment1);
+        fragmentTransaction.commit();
+
+        // The NSDDiscover service runs automatically after initialization!
         nsdHelper = new NSDDiscover(this);
+
+
     }
 
     @Override
@@ -93,14 +114,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume(){
+        super.onResume();
+        if (nsdHelper != null) {
+            nsdHelper.start();
+        }
+        else {
+            Log.w(LOG_TAG, "onResume(): nsdHelper object not found!");
+        }
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         if (nsdHelper != null) {
             nsdHelper.teardown();
         }
+        /*
         if (JmDNSDiscover != null) {
             JmDNSDiscover.onPostExecute("0");
         }
+        */
     }
 
     @Override
@@ -109,9 +143,65 @@ public class MainActivity extends AppCompatActivity {
         if (nsdHelper != null) {
             nsdHelper.teardown();
         }
+        /*
         if (JmDNSDiscover != null) {
             JmDNSDiscover.onPostExecute("0");
         }
+        */
+    }
+
+    /**
+     *  Inflates the menu.
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    /**
+     *  Listener for the menu (toolbar).
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                showSettings();
+                return true;
+
+            case R.id.action_about:
+                showAbout();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public void showAbout(){
+        Intent intent = new Intent(this, AboutActivity.class);
+        startActivity(intent);
+    }
+
+    public void showSettings(){
+        Intent intent = new Intent(this, PreferenceActivity.class);
+        startActivity(intent);
+    }
+
+    public void switchToFragmentRegister() {
+        if (fragmentManager != null) {
+            fragmentManager.beginTransaction().replace(R.id.fragment_main, new MainFragment()).commit();
+        }
+    }
+
+    public void switchToFragmentStreaming() {
+        if (fragmentManager != null) {
+            fragmentManager.beginTransaction().replace(R.id.fragment_main, new StreamingFragment()).commit();
+        }
+    }
+
+    public void switchToFragmentWifi() {
+        toastHelper("Preparing");
     }
 
 
@@ -127,10 +217,13 @@ public class MainActivity extends AppCompatActivity {
      * @param view This activity.
      */
     public void registerToServer(View view) {
+        ProgressBar pb = (ProgressBar) findViewById(R.id.registration_progressbar);
+        pb.setVisibility(View.VISIBLE);
         // OnClick function for the register function
         // Ask for ACCESS_FINE_LOCATION if not already granted
         if (ContextCompat.checkSelfPermission(this,
                 LOCATION_PERMISSION) != PackageManager.PERMISSION_GRANTED) {
+            // The function also calls getIdAndSendToServer() if the permissions are granted
             ActivityCompat.requestPermissions(this, new String[]{LOCATION_PERMISSION}, MY_PERMISSIONS_REQUEST_LOCATION);
         }
         else {
@@ -199,6 +292,7 @@ public class MainActivity extends AppCompatActivity {
                 URL url = new URL(urlString);
                 HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
                 urlConnection.setRequestMethod("POST");
+                urlConnection.setRequestProperty("Connection", "close");
                 out = new BufferedOutputStream(urlConnection.getOutputStream());
 
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
@@ -241,6 +335,8 @@ public class MainActivity extends AppCompatActivity {
             Log.v(LOG_TAG, "Received: " + result);
             if (result == null) {
                 Toast.makeText(MainActivity.this, "Registration failed: illegal HTML response", Toast.LENGTH_SHORT).show();
+                ProgressBar pb = (ProgressBar) findViewById(R.id.registration_progressbar);
+                pb.setVisibility(View.GONE);
                 return;
             }
             List<String> res_list = Utils.splitResponseToSeedAndHostname(result);
@@ -248,10 +344,18 @@ public class MainActivity extends AppCompatActivity {
             // If the string is not correct
             if (res_list == null) {
                 toastHelper("Registration failed: invalid response");
+                ProgressBar pb = (ProgressBar) findViewById(R.id.registration_progressbar);
+                pb.setVisibility(View.GONE);
                 return;
             }
             writeToInternalFile("seed.conf", res_list.get(0));
             writeToInternalFile("hostname.conf", res_list.get(1));
+            Log.v(LOG_TAG, "ProgressBar is dead.");
+            String seed = res_list.get(0);
+            Log.i(LOG_TAG, "Seed: " + seed);
+            toastHelper("Registration completed. Seed: " + seed);
+            ProgressBar pb = (ProgressBar) findViewById(R.id.registration_progressbar);
+            pb.setVisibility(View.GONE);
         }
 
         protected void writeToInternalFile(String filename, String data) {
@@ -342,6 +446,8 @@ public class MainActivity extends AppCompatActivity {
         if (nsdHelper == null) {
             Log.e(LOG_TAG, "sendRegistrationToServer(): nsdHelper has shut down.");
             toastHelper("mDNS service is not running!");
+            ProgressBar pb = (ProgressBar) findViewById(R.id.registration_progressbar);
+            pb.setVisibility(View.GONE);
             return -1;
         }
         String targetURL = nsdHelper.getResolvedHostname();
@@ -349,6 +455,8 @@ public class MainActivity extends AppCompatActivity {
         if (targetURL == null) {
             Log.e(LOG_TAG, "sendRegistrationToServer(): failed to get hostname. ");
             toastHelper("Doorbell device not found; please try later.");
+            ProgressBar pb = (ProgressBar) findViewById(R.id.registration_progressbar);
+            pb.setVisibility(View.GONE);
             return -1;
         }
 
@@ -359,20 +467,16 @@ public class MainActivity extends AppCompatActivity {
         // String targetURL = "http://priviot.cs-georgetown.net:8080/register";
         // targetURL = HARDCODE_RPI_ADDRESS;
 
-
         new PostCall().execute(targetURL, token, nickname);
         // Log.i(LOG_TAG, "Seed: " + seed);
 
+        // Deprecated. This will possibly read the old seed.
+        /*
         String seed = readStringFromInternalFile("seed.conf");
         Log.i(LOG_TAG, "Seed: " + seed);
         toastHelper("Registration completed. Seed: " + seed);
+        */
         return 0;
-    }
-
-
-    public void testFunc(View view) {
-        JmDNSDiscover = new JmDNSService();
-        JmDNSDiscover.doInBackground(this);
     }
 
 
@@ -382,12 +486,27 @@ public class MainActivity extends AppCompatActivity {
      * Equals to Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
      */
     public void toastHelper(String message) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Boolean switcher = sharedPreferences.getBoolean("toast", true);
+        if (switcher == false) {
+            Log.i(LOG_TAG, "Toast disabled by user.");
+            return;
+        }
         Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Get the value of R.id.nicknameField.
+     * @return value of R.id.nicknameField.
+     */
     protected String getNickname() {
         TextInputLayout nicknameField = (TextInputLayout) findViewById(R.id.nicknameField);
         Log.i(LOG_TAG, "nickname: " + nicknameField.getEditText().getText().toString());
         return nicknameField.getEditText().getText().toString();
+    }
+
+    public void startOrbot(View view) {
+        Boolean requested =  OrbotHelper.requestShowOrbotStart(this);
+        toastHelper("Failed to start orbot.");
     }
 }

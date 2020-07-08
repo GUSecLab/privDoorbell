@@ -1,9 +1,16 @@
 package com.example.privdoorbell;
 
+import android.content.Context;
 import android.util.Log;
 
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Utils {
     public static final String LOG_TAG = "Utils";
@@ -44,5 +51,99 @@ public class Utils {
     public static String constructStreamingAddress(String onion_hostname) {
         Log.i(LOG_TAG, "streamaddress: ");
         return "http://" + onion_hostname + ":8000/live?port=1935&app=live&stream=mystream";
+    }
+
+    public static List<String> getConfFileNames() {
+        List<String> ret = new ArrayList<String>();
+        ret.add("hostname.conf");
+        ret.add("seed.conf");
+        return ret;
+    }
+
+    public static Map<String, String> readRegistration(Context context) {
+        Map<String, String> map = new HashMap<String, String>();
+        String host = readStringFromInternalFile(context, "hostname.conf");
+        String seed = readStringFromInternalFile(context, "seed.conf");
+        if (host != null && seed != null) {
+            map.put(seed, host);
+            return map;
+        }
+        else {
+            return null;
+        }
+
+    }
+
+    protected static String readStringFromInternalFile(Context context, String filename) {
+        File path = context.getFilesDir();
+        File file = new File(path, filename);
+
+        int length = (int) file.length();
+        byte[] bytes = new byte[length];
+        String contents = null;
+
+        try {
+            FileInputStream inS = new FileInputStream(file);
+            inS.read(bytes);
+            inS.close();
+
+            contents = new String(bytes);
+        } catch (Exception e) {
+            Log.e(LOG_TAG, e.getMessage());
+            return null;
+        }
+
+        return contents;
+    }
+
+
+    /**
+     * A wrapper for org.json.
+     */
+    public class SettingsJSONMachine {
+
+        private JSONObject jsonObject;
+
+        public SettingsJSONMachine(String settingsJSON) {
+            try {
+                jsonObject = new JSONObject(settingsJSON);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        public String toString(){
+            return jsonObject.toString();
+        }
+
+        public String getField(String field) {
+            try {
+                String ret = jsonObject.getString(field);
+                return ret;
+            } catch (Exception e) {
+                Log.w(LOG_TAG, e.getMessage());
+                return null;
+            }
+        }
+
+        public int removeValue(String field) {
+            try {
+                jsonObject.put(field, null);
+                return 0;
+            } catch (Exception e){
+                return -1;
+            }
+        }
+
+        public int remove(String field) {
+            try {
+                jsonObject.remove(field);
+                return 0;
+            } catch (Exception e){
+                return -1;
+            }
+        }
+
+
     }
 }

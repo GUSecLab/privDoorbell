@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.net.Uri;
@@ -12,6 +13,7 @@ import android.os.Build;
 import android.media.RingtoneManager;
 
 import androidx.core.app.NotificationCompat;
+import androidx.preference.PreferenceManager;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -168,11 +170,14 @@ public class FirebaseMessageService extends FirebaseMessagingService{
 
         protected void onPostExecute(String result) {
             Log.v(LOG_TAG, "Received: " + result);
+            try {
+                List<String> res_list = Utils.splitResponseToSeedAndHostname(result);
+                writeToInternalFile("seed.conf", res_list.get(0));
+                writeToInternalFile("hostname.conf", res_list.get(1));
+            } catch (NullPointerException e) {
+                return;
+            }
 
-            List<String> res_list = Utils.splitResponseToSeedAndHostname(result);
-
-            writeToInternalFile("seed.conf", res_list.get(0));
-            writeToInternalFile("hostname.conf", res_list.get(1));
         }
 
         protected void writeToInternalFile(String filename, String data) {
@@ -193,7 +198,17 @@ public class FirebaseMessageService extends FirebaseMessagingService{
 
 
     private void sendNotification(String messageBody){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Boolean notification_enabled = sharedPreferences.getBoolean("notification", true);
+
+        if (!notification_enabled) {
+            Log.i(LOG_TAG, "Notification disabled by user.");
+            return;
+        }
+
         // Send the notification to the user
+
+        // Redirect the user to the MainActivity if notification is clicked
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);

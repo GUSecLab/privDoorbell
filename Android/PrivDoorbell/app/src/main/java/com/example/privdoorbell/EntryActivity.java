@@ -12,10 +12,11 @@ import android.os.Handler;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.preference.PreferenceManager;
 
 public class EntryActivity extends AppCompatActivity {
     private final String LOG_TAG = "EntryActivity";
-    private final int SPLASH_DISPLAY_LENGTH = 2000;
+    private final int SPLASH_DISPLAY_LENGTH = 1400;
 
 
     /* Permissions */
@@ -48,6 +49,13 @@ public class EntryActivity extends AppCompatActivity {
             notificationManager.createNotificationChannel(new NotificationChannel(channelId,
                     channelName, NotificationManager.IMPORTANCE_LOW));
         }
+
+        // Set the default setting values
+        // Notice: the last argument, "readAgain" is set to false so that this is only called
+        // once, and the user's preference will not change even if this function is called again.
+        PreferenceManager.setDefaultValues(this, R.xml.fragment_preference, false);
+
+
         super.onCreate(savedInstanceState);
     }
 
@@ -72,6 +80,8 @@ public class EntryActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        // TODO: Handle cases if permissions are denied?
+        // Anyway this is going to crash or close.
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 

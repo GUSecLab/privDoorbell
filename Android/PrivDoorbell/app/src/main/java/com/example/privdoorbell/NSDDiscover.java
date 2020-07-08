@@ -15,6 +15,8 @@ public class NSDDiscover {
     public static final String SERVICE_TYPE = "_workstation._tcp.";
     //public static final String SERVICE_TYPE = "_services._dns-sd._udp";
 
+    private boolean running = false;
+
     String resolvedHostname;
 
 
@@ -22,19 +24,38 @@ public class NSDDiscover {
     //NsdManager.ResolveListener resolveListener;
     String serviceName = SERVICE_TYPE;
     NsdManager nsdManager;
+    WifiManager wifi;
     WifiManager.MulticastLock multicastLock;
 
 
     public NSDDiscover(Context context) {
         /* Start NSD */
-        WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        multicastLock = wifi.createMulticastLock("multicastLock");
-        multicastLock.setReferenceCounted(true);
-        multicastLock.acquire();
-        nsdManager = (NsdManager) context.getSystemService(Context.NSD_SERVICE);
-        initializeDiscoveryListener();
+        wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 
-        nsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener);
+        nsdManager = (NsdManager) context.getSystemService(Context.NSD_SERVICE);
+
+        start();
+    }
+
+    public int start() {
+        if (!running) {
+            try {
+                running = true;
+                multicastLock = wifi.createMulticastLock("multicastLock");
+                multicastLock.setReferenceCounted(true);
+                multicastLock.acquire();
+                initializeDiscoveryListener();
+                nsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener);
+
+                return 0;
+            } catch (Exception e) {
+                Log.w(LOG_TAG, "Failed to start service! " + e.getMessage());
+                return -1;
+            }
+        }
+        else {
+            return -1;
+        }
     }
 
     public void initializeDiscoveryListener() {
@@ -116,18 +137,23 @@ public class NSDDiscover {
     }
 
     public void teardown() {
-        Log.i(LOG_TAG, "Shut down NSD");
-        //nsdManager.unregisterService(registrationListener);
+        if (running) {
+            Log.i(LOG_TAG, "Shut down NSD");
+            //nsdManager.unregisterService(registrationListener);
 
-        // This is a BAD way of handling exceptions!
-        // Try another approach if possible
-        try {
-            nsdManager.stopServiceDiscovery(discoveryListener);
-            multicastLock.release();
-        } catch (Exception e) {
-            Log.w(LOG_TAG, "teardown(): Failed to unregister listener! " + e.getMessage());
+            // This is a BAD way of handling exceptions!
+            // Try another approach if possible
+            try {
+                running = false;
+                nsdManager.stopServiceDiscovery(discoveryListener);
+                multicastLock.release();
+            } catch (Exception e) {
+                Log.w(LOG_TAG, "teardown(): Failed to unregister listener! " + e.getMessage());
+            }
         }
-
+        else {
+            assert true;
+        }
     }
 
     public String getResolvedHostname() {

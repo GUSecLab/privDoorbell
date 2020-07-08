@@ -14,7 +14,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         android:extractNativeLibs="true"
         android:usesCleartextTraffic="true">
         <activity
@@ -23,9 +23,8 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity android:name=".StreamingActivity"></activity>
-        <activity android:name=".JmDNSService">
-        </activity>
-
+        <activity android:name=".PreferenceActivity"></activity>
+        <activity android:name=".AboutActivity"></activity>
         <activity android:name=".EntryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
