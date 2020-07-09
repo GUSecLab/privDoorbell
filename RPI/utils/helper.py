@@ -15,5 +15,7 @@ class StringHelper():
             return (k, v)
         
     @staticmethod
-    def timestamp2Readable(timestamp: str):
+    def timestamp2Readable(timestamp):
+        if isinstance(timestamp, str):
+            timestamp = int(timestamp)
         return datetime.datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%dT%H:%M:%SZ')
