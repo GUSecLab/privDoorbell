@@ -112,6 +112,7 @@ def bell():
     global notification_flag
     with notification_lock:
         notification_flag = Param.NOTIFICATION_BELL
+    return 0
 
 @app.route("/manageToken", methods = ['POST', 'GET'])
 def manageToken():
