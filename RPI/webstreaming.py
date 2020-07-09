@@ -85,9 +85,10 @@ def send_dummy_packet():
     global notification_flag
     print("send_dummy_packet(): Started dummy packet thread", flush=True)
     starttime = time.time()
-    cryptogen = SystemRandom()
+    #cryptogen = SystemRandom()
     while True:
-        if cryptogen.random() < DUMMY_PROB and not tokens.isEmpty():
+        #if cryptogen.random() < DUMMY_PROB and not tokens.isEmpty():
+        if not tokens.isEmpty():
             with notification_lock:
                 if notification_flag == Param.NOTIFICATION_FACE:
                     for t in tokens.getList():
