@@ -1,5 +1,6 @@
 import time
 import datetime
+from utils.helper import StringHelper
 
 class TokenList(object):
 
@@ -8,7 +9,7 @@ class TokenList(object):
     
     def insert(self, token: str, timestamp: str, nickname = ""):
         if not token in self.d:
-            self.d[token] = (datetime.datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%dT%H:%M:%SZ'), nickname)
+            self.d[token] = (StringHelper.timestamp2Readable(timestamp), nickname)
         else:
             pass
 

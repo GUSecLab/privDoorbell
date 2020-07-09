@@ -3,6 +3,7 @@ from detectors.face_detection.opencv_detection import OpenCVDetector
 from cryptoutils import HMACSHA256, AESCipher
 from tokenList import TokenList
 from utils.helper import StringHelper
+from utils.param import Param
 
 import threading
 import argparse
@@ -17,19 +18,31 @@ from flask import Response, Flask, render_template, request
 import firebase_admin
 from firebase_admin import credentials, messaging
 
+
+# Multithreading vars
 outputFrame = None
 stream = True
 tokens = TokenList()
 outputFrame_lock = threading.Lock()
+
+notification_flag = Param.NOTIFICATION_NONE
 notification_lock = threading.Lock()
 
+
+# Flask 
 app = Flask(__name__)
 
-#vs = VideoStream(src=0).start()
-#time.sleep(2.0)
+# Static
 RTMP_ADDR = 'rtmp://127.0.0.1:1935/live/mystream'
 DUMMY_PROB = 1e-1
+DUMMY_INTERVAL = 5.0
 
+
+# Firebase authentication
+cred = credentials.Certificate("privdoorbell-af796472f9a4.json")
+firebase_admin.initialize_app(cred)
+
+# Streaming source
 if stream:
     vs = cv2.VideoCapture(RTMP_ADDR)
 else:
@@ -45,38 +58,48 @@ def send_to_token(token: str, msg_type='face'):
     AESMachine = AESCipher(HMACMachine.getBinDigest())
 
     ciphertext, tag = AESMachine.encrypt_base64(msg_type)
+    timestamp = str(time.time())
 
     message = messaging.Message(
         data={
             'type': ciphertext,
             'tag': tag,
             'iv': AESMachine.getIV_base64(),
-            'timestamp': str(time.time())
+            'timestamp': timestamp
         },
         token=token,
     )
     response = messaging.send(message)
-    print({
+    print("send_to_token(): " + {
         'AESKey': AESCipher.bytesToBase64(HMACMachine.getBinDigest()),
-        'type': ciphertext,
+        'type': ciphertext + ' (' + msg_type + ')',
         'tag': tag,
         'iv': AESMachine.getIV_base64(),
-        'timestamp': str(time.time())     
+        'timestamp': timestamp + ' (' + StringHelper.timestamp2Readable(timestamp) + ')'
     })
-    print('Attempted to send msg, res:', response, flush=True)
+    print('send_to_token(): Attempted to send msg, res:', response, flush=True)
 
-cred = credentials.Certificate("privdoorbell-af796472f9a4.json")
-firebase_admin.initialize_app(cred)
+
 
 def send_dummy_packet():
-    print("Started dummy packet thread", flush=True)
+    global notification_flag
+    print("send_dummy_packet(): Started dummy packet thread", flush=True)
     starttime = time.time()
     cryptogen = SystemRandom()
     while True:
         if cryptogen.random() < DUMMY_PROB and not tokens.isEmpty():
-            for t in tokens.getList():
-                send_to_token(t, "dummy")
-        time.sleep(int(180*cryptogen.random()))
+            with notification_lock:
+                if notification_flag == Param.NOTIFICATION_FACE:
+                    for t in tokens.getList():
+                        send_to_token(t, Param.NOTIFICATION_STRING_FACE)
+                    notification_flag = False
+                elif notification_flag == Param.NOTIFICATION_BELL:
+                    for t in tokens.getList():
+                        send_to_token(t, Param.NOTIFICATION_STRING_BELL)
+                else:
+                    for t in tokens.getList():
+                        send_to_token(t, Param.NOTIFICATION_STRING_NONE)                    
+        time.sleep(DUMMY_INTERVAL - ((time.time() - starttime) % DUMMY_INTERVAL))
         
 
 @app.route("/")
@@ -85,9 +108,9 @@ def index():
 
 @app.route("/bell", methods = ['GET'])
 def bell():
-    global tokens
-    for t in tokens.getList():
-        send_to_token(t, 'bell')
+    global notification_flag
+    with notification_lock:
+        notification_flag = Param.NOTIFICATION_BELL
 
 @app.route("/manageToken", methods = ['POST', 'GET'])
 def manageToken():
@@ -95,9 +118,9 @@ def manageToken():
     if request.method == 'GET':
         return render_template("token_management.html", tokens = tokens.getDict())
     elif request.method == 'POST':
-        print(request.form.to_dict(), flush=True)
+        print("manageToken(): " + request.form.to_dict(), flush=True)
         for k, v in request.form.to_dict().items():
-            print(k)
+            print("manageToken(): " + k)
             tokens.delete(k)
         return render_template("token_management_confirmed.html")
 
@@ -107,9 +130,9 @@ def register():
     global tokens
     if request.method == 'GET':
         return render_template("token_management.html", tokens = tokens.getDict())
-    print("Start recving post")
+    print("register(): Start recving post")
     data = request.form.to_dict()
-    print(data, flush=True)
+    print("register(): " + data, flush=True)
 
     # Delimiter
     ret_msg = "---"
@@ -129,7 +152,7 @@ def register():
         
     token, nickname = StringHelper.extractFromPassedDict(data)
     tokens.insert(token, time.time(), nickname)
-    print("Returned" + ret_msg)
+    print("register(): Returned " + ret_msg)
     return ret_msg
 
 @app.route("/video_feed")
@@ -173,7 +196,7 @@ def detect_motion(frameCount):
             outputFrame = frame.copy()
 
 def detect_face(frameCount):
-    global vs, outputFrame, outputFrame_lock
+    global vs, outputFrame, outputFrame_lock, notification_flag
     
     fd = OpenCVDetector()
     total = 0
@@ -197,7 +220,7 @@ def detect_face(frameCount):
             num_faces, faces = fd.detect(gray)
 
             if num_faces:
-                print(num_faces, faces, flush=True)
+                #print(num_faces, faces, flush=True)
                 for (x, y, w, h) in faces:
                     cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
             else:
@@ -205,15 +228,14 @@ def detect_face(frameCount):
                 pass
 
         total += 1
-
+        
         if num_faces:
             if (time.time() - cur_time > 30) and not tokens.isEmpty():
-                for t in tokens.getList():
-                    send_to_token(t)
-                print("Message sent.", flush=True)
+                with notification_lock:
+                    notification_flag = Param.NOTIFICATION_FACE
                 cur_time = time.time()
             else:
-                print(time.time() - cur_time)
+                print("detect_face(): " + time.time() - cur_time)
             
         with outputFrame_lock:
             outputFrame = frame.copy()

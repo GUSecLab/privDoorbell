@@ -1,3 +1,4 @@
+import datetime
 import json
 
 class StringHelper():
@@ -13,3 +14,6 @@ class StringHelper():
         for k, v in r.items():
             return (k, v)
         
+    @staticmethod
+    def timestamp2Readable(timestamp: int):
+        return datetime.datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%dT%H:%M:%SZ')
