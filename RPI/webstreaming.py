@@ -238,7 +238,7 @@ def detect_face(frameCount):
                     notification_flag = Param.NOTIFICATION_FACE
                 cur_time = time.time()
             else:
-                print("detect_face(): " + time.time() - cur_time)
+                print("detect_face(): " + str(time.time() - cur_time))
             
         with outputFrame_lock:
             outputFrame = frame.copy()
