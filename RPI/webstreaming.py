@@ -93,10 +93,11 @@ def send_dummy_packet():
                 if notification_flag == Param.NOTIFICATION_FACE:
                     for t in tokens.getList():
                         send_to_token(t, Param.NOTIFICATION_STRING_FACE)
-                    notification_flag = False
+                    notification_flag = Param.NOTIFICATION_STRING_NONE
                 elif notification_flag == Param.NOTIFICATION_BELL:
                     for t in tokens.getList():
                         send_to_token(t, Param.NOTIFICATION_STRING_BELL)
+                    notification_flag = Param.NOTIFICATION_STRING_NONE
                 else:
                     for t in tokens.getList():
                         send_to_token(t, Param.NOTIFICATION_STRING_NONE)                    
@@ -112,7 +113,7 @@ def bell():
     global notification_flag
     with notification_lock:
         notification_flag = Param.NOTIFICATION_BELL
-    return 0
+    return "default"
 
 @app.route("/manageToken", methods = ['POST', 'GET'])
 def manageToken():
@@ -142,13 +143,13 @@ def register():
     with open("seed.conf") as f:
         s = f.read()
     if not s:
-        return 0
+        return "default"
     else:
         ret_msg = s + ret_msg
     with open("hostname.conf") as f:
         s = f.read()
     if not s:
-        return 0
+        return "default"
     else:
         ret_msg = ret_msg + s
         
