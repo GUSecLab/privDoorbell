@@ -17,5 +17,5 @@ class StringHelper():
     @staticmethod
     def timestamp2Readable(timestamp):
         if isinstance(timestamp, str):
-            timestamp = int(timestamp)
+            timestamp = float(timestamp)
         return datetime.datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%dT%H:%M:%SZ')
