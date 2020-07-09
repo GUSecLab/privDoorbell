@@ -70,13 +70,13 @@ def send_to_token(token: str, msg_type='face'):
         token=token,
     )
     response = messaging.send(message)
-    print("send_to_token(): " + {
+    print("send_to_token(): " + str({
         'AESKey': AESCipher.bytesToBase64(HMACMachine.getBinDigest()),
         'type': ciphertext + ' (' + msg_type + ')',
         'tag': tag,
         'iv': AESMachine.getIV_base64(),
         'timestamp': timestamp + ' (' + StringHelper.timestamp2Readable(timestamp) + ')'
-    })
+    }))
     print('send_to_token(): Attempted to send msg, res:', response, flush=True)
 
 
@@ -132,7 +132,7 @@ def register():
         return render_template("token_management.html", tokens = tokens.getDict())
     print("register(): Start recving post")
     data = request.form.to_dict()
-    print("register(): " + data, flush=True)
+    print("register(): " + str(data), flush=True)
 
     # Delimiter
     ret_msg = "---"
