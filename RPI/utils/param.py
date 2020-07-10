@@ -7,3 +7,5 @@ class Param:
     NOTIFICATION_STRING_NONE = 'dummy'
     NOTIFICATION_STRING_BELL = 'bell'
     NOTIFICATION_STRING_FACE = 'face'
+
+    HTTP_DEFAULT_RETURN = 'Internal Error'

@@ -12,7 +12,7 @@ googleapis-common-protos==1.51.0
 imutils==0.5.3
 Jinja2==2.11.2
 numpy==1.18.4
-opencv-python==4.2.0.34
+opencv-python==3.4.6.27
 opencv-utils==0.0.2
+protobuf==3.12.2
 pycryptodomex==3.9.7
-python-ffmpeg-video-streaming>=0.1

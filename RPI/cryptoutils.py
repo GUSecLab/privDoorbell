@@ -4,9 +4,6 @@ from base64 import b64encode
 import random
 import secrets
 
-key = '67132748186923924798719543436596703771'
-msg = 'CHG'
-
 class HMACSHA256(object):
 
     def __init__(self, key, data):
@@ -26,6 +23,7 @@ class HMACSHA256(object):
 
 class AESCipher(object):
 
+    # The following static variables should match with the client
     GCM_IV_LENGTH = 12
     GCM_TAG_LENGTH = 16
 
@@ -60,16 +58,3 @@ class AESCipher(object):
     @staticmethod
     def bytesToBase64(byteString):
         return b64encode(byteString).decode('utf-8')
-    
-
-
-if __name__ == "__main__":
-    HMACMachine = HMACSHA256(key, "1")
-    new_key = HMACMachine.getBinDigest()
-    aes = AESCipher(new_key)
-
-
-    print(AESCipher.bytesToBase64(new_key))
-    print(aes.encrypt_base64(msg), AESCipher.bytesToBase64(aes.getIV()))
-
-    

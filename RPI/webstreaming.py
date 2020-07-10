@@ -113,7 +113,7 @@ def bell():
     global notification_flag
     with notification_lock:
         notification_flag = Param.NOTIFICATION_BELL
-    return "default"
+    return Param.HTTP_DEFAULT_RETURN
 
 @app.route("/manageToken", methods = ['POST', 'GET'])
 def manageToken():
@@ -140,16 +140,18 @@ def register():
     # Delimiter
     ret_msg = "---"
 
+    # If either file is not available, return an error string
     with open("seed.conf") as f:
         s = f.read()
     if not s:
-        return "default"
+        return Param.HTTP_DEFAULT_RETURN
     else:
         ret_msg = s + ret_msg
+
     with open("hostname.conf") as f:
         s = f.read()
     if not s:
-        return "default"
+        return Param.HTTP_DEFAULT_RETURN
     else:
         ret_msg = ret_msg + s
         
@@ -211,6 +213,10 @@ def detect_face(frameCount):
             _, frame = vs.read()
         else:
             frame = vs.read()
+        
+        if not frame:
+            print("Frame is none.")
+            continue
 
         frame = imutils.resize(frame, width=400)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
