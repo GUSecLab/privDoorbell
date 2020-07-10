@@ -215,8 +215,15 @@ def detect_face(frameCount):
         else:
             frame = vs.read()
 
-        if frame is None:
+        print_flag = True
+        if not vs.isOpened() and print_flag:
+            print("Empty capture object.")
+            print_flag = False
+            continue
+
+        if frame is None and print_flag:
             print("Empty frame.")
+            print_flag = False
             continue
 
         frame = imutils.resize(frame, width=400)
