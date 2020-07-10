@@ -33,7 +33,8 @@ notification_lock = threading.Lock()
 app = Flask(__name__)
 
 # Static
-RTMP_ADDR = 'rtmp://127.0.0.1:1935/live/mystream'
+# RTMP_ADDR = 'rtmp://127.0.0.1:1935/live/mystream'
+RTMP_ADDR = 'http://127.0.0.1:8000/live?port=1935&app=live&stream=mystream'
 DUMMY_PROB = 1e-1
 DUMMY_INTERVAL = 5.0
 
@@ -214,6 +215,10 @@ def detect_face(frameCount):
         else:
             frame = vs.read()
 
+        if frame is None:
+            print("Empty frame.")
+            continue
+
         frame = imutils.resize(frame, width=400)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         gray = cv2.GaussianBlur(gray, (7, 7), 0)
@@ -290,3 +295,5 @@ if __name__ == "__main__":
 
 if not stream:
     vs.stop()
+else:
+    vs.release()
