@@ -214,7 +214,7 @@ def detect_face(frameCount):
         else:
             frame = vs.read()
         
-        if not frame:
+        if frame == None:
             print("Frame is none.")
             continue
 
