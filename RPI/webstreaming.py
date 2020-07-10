@@ -213,10 +213,6 @@ def detect_face(frameCount):
             _, frame = vs.read()
         else:
             frame = vs.read()
-        
-        if frame == None:
-            print("Frame is none.")
-            continue
 
         frame = imutils.resize(frame, width=400)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
