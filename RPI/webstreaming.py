@@ -33,8 +33,8 @@ notification_lock = threading.Lock()
 app = Flask(__name__)
 
 # Static
-# RTMP_ADDR = 'rtmp://127.0.0.1:1935/live/mystream'
-RTMP_ADDR = 'http://127.0.0.1:8000/live?port=1935&app=live&stream=mystream'
+RTMP_ADDR = 'rtmp://127.0.0.1:1935/live/mystream'
+# RTMP_ADDR = 'http://127.0.0.1:8000/live?port=1935&app=live&stream=mystream'
 DUMMY_PROB = 1e-1
 DUMMY_INTERVAL = 5.0
 
@@ -208,6 +208,8 @@ def detect_face(frameCount):
     total = 0
     cur_time = time.time() - 15
 
+    print_flag = True
+
     while True:
         num_faces = 0
         if stream:
@@ -215,7 +217,7 @@ def detect_face(frameCount):
         else:
             frame = vs.read()
 
-        print_flag = True
+        
         if not vs.isOpened() and print_flag:
             print("Empty capture object.")
             print_flag = False
