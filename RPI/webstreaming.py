@@ -122,7 +122,7 @@ def manageToken():
     if request.method == 'GET':
         return render_template("token_management.html", tokens = tokens.getDict())
     elif request.method == 'POST':
-        print("manageToken(): " + request.form.to_dict(), flush=True)
+        print("manageToken(): " + str(request.form.to_dict()), flush=True)
         for k, v in request.form.to_dict().items():
             print("manageToken(): " + k)
             tokens.delete(k)
