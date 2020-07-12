@@ -52,10 +52,11 @@ else:
 
 def send_to_token(token: str, msg_type='face'):
     try:
-        settings = json.load("config.json")
-        seed = settings['seed']
+        with open("config.json") as f:
+            settings = json.load(f)
+            seed = settings['seed']
     except:
-        print("Seed is not available. Try running init script again.")
+        print("Seed is not available. Try running init script again.", flush=True)
         return
         
     HMACMachine = HMACSHA256(seed, "1")
