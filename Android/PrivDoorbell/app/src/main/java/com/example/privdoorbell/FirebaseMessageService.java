@@ -6,11 +6,10 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
-import android.util.Log;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
-import android.media.RingtoneManager;
+import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
@@ -18,31 +17,12 @@ import androidx.preference.PreferenceManager;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
-
-import com.example.privdoorbell.AESCipher;
-import com.example.privdoorbell.HMAC;
-import com.example.privdoorbell.CryptoHelper;
-
-import org.slf4j.helpers.Util;
 
 public class FirebaseMessageService extends FirebaseMessagingService{
     private static final String LOG_TAG = "FirebaseMessagingService";
-    protected String key = "";
     public final static String HARDCODE_RPI_ADDRESS = "http://192.168.0.4:8080/register";
     public final static String HARDCODE_FIRST_KEY_STR = "1";
 
@@ -58,6 +38,7 @@ public class FirebaseMessageService extends FirebaseMessagingService{
         String seed = readStringFromInternalFile("seed.conf");
 
         if (seed == null) {
+            Log.w(LOG_TAG, "onMessageReceived(): Got unexpected message.");
             return;
         }
 
@@ -103,97 +84,9 @@ public class FirebaseMessageService extends FirebaseMessagingService{
     public void onNewToken(String token) {
         Log.d(LOG_TAG, "Refreshed token: " + token);
 
-        sendRegistrationToServer(token);
-    }
+        sendNotification("The messaging token has expired; please register again.");
 
-    public class PostCall extends AsyncTask<String, String, String> {
-        public PostCall() {
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            Log.i(LOG_TAG, "POST Started.");
-        }
-
-        @Override
-        protected String doInBackground(String ... params) {
-            String urlString = params[0];
-            String data = params[1];
-            OutputStream out = null;
-
-            Log.v(LOG_TAG, "Start sending POST request to " + urlString + "...");
-
-            String ret = null;
-
-            try {
-                URL url = new URL(urlString);
-                HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
-                urlConnection.setRequestMethod("POST");
-                out = new BufferedOutputStream(urlConnection.getOutputStream());
-
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
-                writer.write(data);
-                writer.flush();
-                writer.close();
-
-                urlConnection.connect();
-                int responseCode = urlConnection.getResponseCode();
-                Log.i(LOG_TAG, "Res code: " + responseCode);
-
-                InputStream inS;
-                if (200 <= urlConnection.getResponseCode() && urlConnection.getResponseCode() <= 299) {
-                    inS = urlConnection.getInputStream();
-                }
-                else{
-                    inS = urlConnection.getErrorStream();
-                }
-
-                BufferedReader br = new BufferedReader(new InputStreamReader(inS));
-
-                StringBuilder responseBody = new StringBuilder();
-                String curLine;
-                while ((curLine = br.readLine()) != null) {
-                    responseBody.append(curLine);
-                }
-
-                br.close();
-                ret = responseBody.toString();
-                Log.i(LOG_TAG, "Res body: " + responseBody);
-            }
-            catch (Exception e) {
-                Log.d(LOG_TAG, e.getMessage());
-            }
-
-            return ret;
-        }
-
-        protected void onPostExecute(String result) {
-            Log.v(LOG_TAG, "Received: " + result);
-            try {
-                List<String> res_list = Utils.splitResponseToSeedAndHostname(result);
-                writeToInternalFile("seed.conf", res_list.get(0));
-                writeToInternalFile("hostname.conf", res_list.get(1));
-            } catch (NullPointerException e) {
-                return;
-            }
-
-        }
-
-        protected void writeToInternalFile(String filename, String data) {
-            File path = getFilesDir();
-            File file = new File(path, filename);
-            Log.i(LOG_TAG, "Starting writing " + data + "to " + filename);
-
-            try{
-                // TODO: Handle the actual exceptions
-                FileOutputStream stream = new FileOutputStream(file);
-                stream.write(data.getBytes());
-                stream.close();
-            } catch (Exception e) {
-                Log.e(LOG_TAG, e.getMessage());
-            }
-        }
+        writeToInternalFile("token.txt", token);
     }
 
 
@@ -202,7 +95,7 @@ public class FirebaseMessageService extends FirebaseMessagingService{
         Boolean notification_enabled = sharedPreferences.getBoolean("notification", true);
 
         if (!notification_enabled) {
-            Log.i(LOG_TAG, "Notification disabled by user.");
+            Log.v(LOG_TAG, "Notification disabled by user.");
             return;
         }
 
@@ -229,7 +122,7 @@ public class FirebaseMessageService extends FirebaseMessagingService{
         // If SDK > 26 then channel is needed
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(channelID,
-                    "Channel human readable title",
+                    "Privdoorbell Notification",
                     NotificationManager.IMPORTANCE_DEFAULT);
             notificationManager.createNotificationChannel(channel);
         }
@@ -237,17 +130,6 @@ public class FirebaseMessageService extends FirebaseMessagingService{
         notificationManager.notify(0, notificationBuilder.build());
     }
 
-
-
-    public void sendRegistrationToServer(String token){
-        Log.i(LOG_TAG, "Registering to server...");
-        //String targetURL = "http://priviot.cs-georgetown.net:8080/register";
-        String targetURL = HARDCODE_RPI_ADDRESS;
-
-
-        new PostCall().execute(targetURL, token);
-        // Log.i(LOG_TAG, "Seed: " + seed);
-    }
 
     protected String readStringFromInternalFile(String filename) {
         File path = getFilesDir();
@@ -268,5 +150,21 @@ public class FirebaseMessageService extends FirebaseMessagingService{
         }
 
         return contents;
+    }
+
+
+    protected void writeToInternalFile(String filename, String data) {
+        File path = getFilesDir();
+        File file = new File(path, filename);
+        Log.i(LOG_TAG, "Starting writing " + data + "to " + filename);
+
+        try{
+            // TODO: Handle the actual exceptions
+            FileOutputStream stream = new FileOutputStream(file);
+            stream.write(data.getBytes());
+            stream.close();
+        } catch (Exception e) {
+            Log.e(LOG_TAG, e.getMessage());
+        }
     }
 }

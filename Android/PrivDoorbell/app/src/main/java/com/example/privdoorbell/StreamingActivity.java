@@ -97,6 +97,10 @@ public class StreamingActivity extends AppCompatActivity {
         args.add("-vvv");
         args.add(socks_string);
         args.add("--drop-late-frames");
+        args.add("--skip-frames");
+        args.add("--network-caching=1000");
+        args.add("--clock-jitter=0");
+        args.add("--clock-synchro=0");
         mLibVLC = new LibVLC(this, args);
         mMediaPlayer = new MediaPlayer(mLibVLC);
 
@@ -124,9 +128,9 @@ public class StreamingActivity extends AppCompatActivity {
             //System.setProperty("socksProxyPort", socks_port);
             final Media media = new Media(mLibVLC, Uri.parse(streaming_url));
             media.setHWDecoderEnabled(true, false);
-            media.addOption(":network-caching=300");
-            media.addOption(":clock-jitter=0");
-            media.addOption(":clock-synchro=0");
+            //media.addOption(":network-caching=300");
+            //media.addOption(":clock-jitter=0");
+            //media.addOption(":clock-synchro=0");
             mMediaPlayer.setMedia(media);
             media.release();
         } catch (Exception e) {

@@ -205,10 +205,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void switchToStreaming(View view) {
-        Intent intent = new Intent(this, StreamingActivity.class);
-        startActivity(intent);
-    }
+
+    /*
+    The logic for these registration functions is:
+    registerToServer(): check if LOCATION permission is already granted.
+    -> YES: getIdAndSendToServer()
+    -> NO: requestPremissions()
+
+    requestPermissions(): ask for permissions, if granted:
+    -> YES: getIdAndSendToServer()
+    -> NO: disable the register button
+    */
 
     /**
      * The OnClick function for the "register" button.
@@ -395,40 +402,54 @@ public class MainActivity extends AppCompatActivity {
         return contents;
     }
 
+
+    /**
+     * Get the token, send it to the server (which is retrieved from nsdService)
+     * with nickname in the inputField.
+     *
+     * Logic: check if the tokenfile exists (which means the token has been updated)
+     * YES ->   Instead of calling Firebase method again (which doesn't seem working),
+     *          read token from the file and send. Delete the file after calling.
+     * NO ->    Simply call getInstanceId() and send.
+     *
+     *
+     * *** This is not the best way of handling tokens ***
+     */
     public void getIdAndSendToServer() {
         getIdAndSendToServer(getNickname());
     }
 
     public void getIdAndSendToServer(final String nickname) {
         // Do the actual registration work
-        Log.i(LOG_TAG, "Start checking token...");
-        FirebaseInstanceId.getInstance().getInstanceId()
-                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
-                    // Retrieve the current registration token
-                    // Source: https://firebase.google.com/docs/cloud-messaging/android/client
-                    @Override
-                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
-                        if (!task.isSuccessful()) {
-                            Log.w(LOG_TAG, "getInstanceId failed", task.getException());
-                            return;
-                        }
-
-                        // Get new Instance ID token
-                        String token = task.getResult().getToken();
-
-                        // Log and toast
-                        // WARNING: The sendRegistrationToServer() function includes AsyncTask for
-                        // POST request. No way to know if the task is over!
-                        sendRegistrationToServer(token, nickname);
-                        String msg = getString(R.string.msg_token_fmt, token);
-                        // Log.d(LOG_TAG, "Token: " + token);
-                        // Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-
-                    }
-                });
         Log.i(LOG_TAG, "Register button pushed.");
-        // Notice: the lines above, for some reason, are automatically executed.
-        //FirebaseInstanceId.getInstance().getInstanceId();
+
+        File tokenfile = new File(getFilesDir(), "token.txt");
+        if (tokenfile.exists()) {
+            Log.i(LOG_TAG, "getIdAndSendToServer(): Reading existing token");
+            String token = readStringFromInternalFile("token.txt");
+            sendRegistrationToServer(token, nickname);
+            deleteFile("token.txt");
+        }
+        else{
+            Log.i(LOG_TAG, "getIdAndSendToServer(): Getting new token");
+
+            FirebaseInstanceId.getInstance().getInstanceId()
+                    .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                        // Retrieve the current registration token
+                        // Source: https://firebase.google.com/docs/cloud-messaging/android/client
+                        @Override
+                        public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                            if (!task.isSuccessful()) {
+                                Log.w(LOG_TAG, "getInstanceId failed", task.getException());
+                                return;
+                            }
+
+                            // Get new Instance ID token
+                            String token = task.getResult().getToken();
+                            sendRegistrationToServer(token, nickname);
+                        }
+                    });
+        }
     }
 
 
@@ -507,6 +528,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void startOrbot(View view) {
         Boolean requested =  OrbotHelper.requestShowOrbotStart(this);
-        toastHelper("Failed to start orbot.");
+        if (!requested) {
+            toastHelper("Failed to start orbot.");
+        }
+
     }
 }
