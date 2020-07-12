@@ -27,5 +27,6 @@ d = {
     "audio_input": None,
 }
 
-with open("config.json") as f:
+
+with open("config.json", "w") as f:
     json.dump(d, f)
