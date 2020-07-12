@@ -147,8 +147,9 @@ def register():
 
     # If either is not available, return an error string
     try:
-        settings = json.load('config.json')
-        ret_msg = settings['seed'] + ret_msg + settings['onion_hostname']
+        with open("config.json") as f:
+            settings = json.load(f)
+            ret_msg = settings['seed'] + ret_msg + settings['onion_hostname']
     except:
         return Param.HTTP_DEFAULT_RETURN
         
