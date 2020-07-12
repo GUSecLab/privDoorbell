@@ -10,6 +10,7 @@ import argparse
 import datetime
 import time
 from random import SystemRandom
+import json
 
 import imutils
 from imutils.video import VideoStream
@@ -50,11 +51,13 @@ else:
     vs = VideoStream(src=0).start()
 
 def send_to_token(token: str, msg_type='face'):
-    # Know what you are doing here! The read() method comes with a newline at the end
-    # Strip that or the server will be using a different key with the client
-    with open("seed.conf") as f:
-        seed = f.read().strip()
-    print("Seed: " + seed)
+    try:
+        settings = json.load("config.json")
+        seed = settings['seed']
+    except:
+        print("Seed is not available. Try running init script again.")
+        return
+        
     HMACMachine = HMACSHA256(seed, "1")
     AESMachine = AESCipher(HMACMachine.getBinDigest())
 
@@ -141,20 +144,13 @@ def register():
     # Delimiter
     ret_msg = "---"
 
-    # If either file is not available, return an error string
-    with open("seed.conf") as f:
-        s = f.read()
-    if not s:
+    # If either is not available, return an error string
+    try:
+        settings = json.load('config.json')
+        ret_msg = settings['seed'] + ret_msg + settings['onion_hostname']
+    except:
         return Param.HTTP_DEFAULT_RETURN
-    else:
-        ret_msg = s + ret_msg
-
-    with open("hostname.conf") as f:
-        s = f.read()
-    if not s:
-        return Param.HTTP_DEFAULT_RETURN
-    else:
-        ret_msg = ret_msg + s
+        
         
     token, nickname = StringHelper.extractFromPassedDict(data)
     tokens.insert(token, time.time(), nickname)

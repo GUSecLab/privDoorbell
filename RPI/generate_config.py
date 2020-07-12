@@ -7,10 +7,10 @@ if (not os.path.isfile("seed.conf")) or (not os.path.isfile("hostname.conf")):
 
 
 with open("seed.conf") as f:
-    seed = f.read()
+    seed = f.read().strip()
 
 with open("hostname.conf") as f:
-    hostname = f.read()
+    hostname = f.read().strip()
 
 
 d = {
@@ -27,3 +27,4 @@ d = {
     "audio_input": None,
 }
 
+d.dump("config.json")
