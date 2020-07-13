@@ -18,7 +18,7 @@ import cv2
 from flask import Response, Flask, render_template, request
 import firebase_admin
 from firebase_admin import credentials, messaging
-
+from gpiozero import Button
 
 # Multithreading vars
 outputFrame = None
@@ -29,6 +29,9 @@ outputFrame_lock = threading.Lock()
 notification_flag = Param.NOTIFICATION_NONE
 notification_lock = threading.Lock()
 
+
+# GPIO
+doorbell_button = Button(23)
 
 # Flask 
 app = Flask(__name__)
@@ -112,6 +115,11 @@ def send_dummy_packet():
 @app.route("/")
 def index():
     return render_template("index.html")
+
+def bell_button_callback():
+    global notification_flag
+    with notification_lock:
+        notification_flag = Param.NOTIFICATION_BELL
 
 @app.route("/bell", methods = ['GET'])
 def bell():
@@ -296,6 +304,9 @@ if __name__ == "__main__":
     dummy_thread = threading.Thread(target = send_dummy_packet)
     dummy_thread.daemon = True
     dummy_thread.start()
+
+    # GPIO
+    doorbell_button.when_pressed = bell_button_callback
 
 
     app.run(host = args["ip"], port = args["port"], debug=True, threaded=True, use_reloader=False)
