@@ -37,7 +37,19 @@ doorbell_button = Button(23)
 app = Flask(__name__)
 
 # Static
-RTMP_ADDR = 'rtmp://127.0.0.1:1935/live/mystream'
+try:
+    with open("config.json") as f:
+        settings = json.load(f)
+        seed = settings['seed']
+except:
+    print("Seed is not available. Try running init script again.", flush=True)
+    exit(0)
+
+HMACMachine = HMACSHA256(seed, "1")
+pwd = AESCipher.bytesToBase64(HMACMachine.getBinDigest())
+
+RTMP_ADDR = 'rtmp://127.0.0.1:1935/live/mystream' + '?psk=' + pwd
+print("RTMP_ADDR: " + RTMP_ADDR)
 # RTMP_ADDR = 'http://127.0.0.1:8000/live?port=1935&app=live&stream=mystream'
 DUMMY_PROB = 1e-1
 DUMMY_INTERVAL = 5.0
