@@ -35,6 +35,7 @@ doorbell_button = Button(23)
 
 # Flask 
 app = Flask(__name__)
+app_auth = Flask('auth')
 
 # Static
 RTMP_ADDR = 'rtmp://127.0.0.1:1935/live/mystream'
@@ -116,7 +117,7 @@ def send_dummy_packet():
 def index():
     return render_template("index.html")
 
-@app.route("/auth", methods = ['POST'])
+@app_auth.route("/auth", methods = ['POST'])
 def auth():
     d = request.form.to_dict()
     if 'psk' in d:
@@ -295,8 +296,7 @@ def generate():
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("-i", "--ip", type=str, default='0.0.0.0', help="ip address of device")
-    ap.add_argument("-o", '--port', type=int, default=8080)
+
     ap.add_argument("-f", "--frame-count", type=int, default=32)
     ap.add_argument("-d", "--detector", type=str, default='face')
     args = vars(ap.parse_args())
@@ -320,7 +320,8 @@ if __name__ == "__main__":
     doorbell_button.when_pressed = bell_button_callback
 
 
-    app.run(host = args["ip"], port = args["port"], debug=True, threaded=True, use_reloader=False)
+    app.run(host = "0.0.0.0", port = 8080, debug=True, threaded=True, use_reloader=False)
+    app_auth.run(host = "0.0.0.0", port = 8081, debug=True, threaded=True, use_reloader=False)
 
 if not stream:
     vs.stop()
