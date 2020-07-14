@@ -29,7 +29,7 @@
         </tr>
         {% for token, (timestamp, nickname) in tokens.items() %}
         <tr>
-            <td>{{ token }}</td>
+            <td>{{ token[:5] }}</td>
             <td> {{ nickname }} </td>
             <td> {{ timestamp }}</td>
             <td>
