@@ -15,7 +15,7 @@ import json
 import imutils
 from imutils.video import VideoStream
 import cv2
-from flask import Response, Flask, render_template, request
+from flask import Response, Flask, render_template, request, abort
 import firebase_admin
 from firebase_admin import credentials, messaging
 from gpiozero import Button
@@ -115,6 +115,15 @@ def send_dummy_packet():
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/auth", methods = ['POST'])
+def auth():
+    d = request.form.to_dict()
+    if 'psk' in d:
+        if d['psk'] == 'absolutelysafepassword':
+            return Response("", status=201)
+    else:
+        abort(404)
 
 def bell_button_callback():
     global notification_flag
