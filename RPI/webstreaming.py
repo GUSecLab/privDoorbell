@@ -122,6 +122,8 @@ def auth():
     if 'psk' in d:
         if d['psk'] == 'absolutelysafepassword':
             return Response("", status=201)
+        else:
+            Response("", status=404)
     else:
         return Response("", status=404)
 
