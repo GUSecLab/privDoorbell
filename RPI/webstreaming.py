@@ -35,7 +35,6 @@ doorbell_button = Button(23)
 
 # Flask 
 app = Flask(__name__)
-app_auth = Flask('auth')
 
 # Static
 RTMP_ADDR = 'rtmp://127.0.0.1:1935/live/mystream'
@@ -116,17 +115,6 @@ def send_dummy_packet():
 @app.route("/")
 def index():
     return render_template("index.html")
-
-@app_auth.route("/auth", methods = ['POST'])
-def auth():
-    d = request.form.to_dict()
-    if 'psk' in d:
-        if d['psk'] == 'absolutelysafepassword':
-            return Response("", status=201)
-        else:
-            return Response("", status=404)
-    else:
-        return Response("", status=404)
 
 def bell_button_callback():
     global notification_flag
@@ -321,7 +309,6 @@ if __name__ == "__main__":
 
 
     app.run(host = "0.0.0.0", port = 8080, debug=True, threaded=True, use_reloader=False)
-    app_auth.run(host = "0.0.0.0", port = 8081, debug=True, threaded=True, use_reloader=False)
 
 if not stream:
     vs.stop()
