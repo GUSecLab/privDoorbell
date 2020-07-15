@@ -54,22 +54,19 @@ def auth():
 @app_auth.route("/playAudio", methods = ['GET'])
 def play_audio():
     d = request.form.to_dict()
-    try:
-        with open("registration.json", "r") as f:
-            tokenList = json.load(f)
-        for _, (device_token, _, _) in tokenList.items():
-            if d['wmt'] == device_token and d['psk'] == re.sub("[^A-Za-z0-9]", "", AESCipher.bytesToBase64(HMACSHA256(seed, device_token).getBinDigest())):
-                if d['audio'] == '1':
-                    os.system('aplay 1.wav')
-                elif d['audio'] == '2':
-                    os.system('aplay 2.wav')
-                elif d['audio'] == '3':
-                    os.system('aplay 3.wav')
-                else:
-                    os.system('aplay 4.wav')
-                return Response("", status=201)            
-    except:
-        return Response("", status=404)
+    with open("registration.json", "r") as f:
+        tokenList = json.load(f)
+    for _, (device_token, _, _) in tokenList.items():
+        if d['wmt'] == device_token and d['psk'] == re.sub("[^A-Za-z0-9]", "", AESCipher.bytesToBase64(HMACSHA256(seed, device_token).getBinDigest())):
+            if d['audio'] == '1':
+                os.system('aplay 1.wav')
+            elif d['audio'] == '2':
+                os.system('aplay 2.wav')
+            elif d['audio'] == '3':
+                os.system('aplay 3.wav')
+            else:
+                os.system('aplay 4.wav')
+            return Response("", status=201)
     return Response("", status=404)
 
 
