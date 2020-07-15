@@ -1,4 +1,5 @@
 import json
+import re
 
 from flask import Response, Flask, render_template, request, abort
 
@@ -17,7 +18,7 @@ except:
 
 
 HMACMachine = HMACSHA256(seed, "1")
-pwd = AESCipher.bytesToBase64(HMACMachine.getBinDigest())
+pwd = re.sub("[^A-Za-z0-9]", "", AESCipher.bytesToBase64(HMACMachine.getBinDigest())) 
 
 print("Password: " + pwd, flush=True)
 

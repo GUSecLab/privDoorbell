@@ -11,6 +11,7 @@ import datetime
 import time
 from random import SystemRandom
 import json
+import re
 
 import imutils
 from imutils.video import VideoStream
@@ -45,8 +46,9 @@ except:
     print("Seed is not available. Try running init script again.", flush=True)
     exit(0)
 
+# Don't forget to remove special chars
 HMACMachine = HMACSHA256(seed, "1")
-pwd = AESCipher.bytesToBase64(HMACMachine.getBinDigest())
+pwd = re.sub("[^A-Za-z0-9]", "", AESCipher.bytesToBase64(HMACMachine.getBinDigest())) 
 
 RTMP_ADDR = 'rtmp://127.0.0.1:1935/live/mystream' + '?psk=' + pwd
 print("RTMP_ADDR: " + RTMP_ADDR)
