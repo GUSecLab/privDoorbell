@@ -38,17 +38,14 @@ def auth():
             return Response("", status=201)
         else:
             if 'wmt' in d:
-                try:
-                    with open("registration.json", "r") as f:
-                        tokenList = json.load(f)
-                    print(d['wmt'], d['psk'])
-                    for _, (device_token, _, _) in tokenList:
-                        print(AESCipher.bytesToBase64(HMACSHA256(seed, device_token).getBinDigest()))
-                        if d['wmt'] == device_token and d['psk'] == re.sub("[^A-Za-z0-9]", "", AESCipher.bytesToBase64(HMACSHA256(seed, device_token).getBinDigest())):
-                            return Response("", status=201)
-                    return Response("", status=404)
-                except:
-                    return Response("", status=404)
+                with open("registration.json", "r") as f:
+                    tokenList = json.load(f)
+                print(d['wmt'], d['psk'])
+                for _, (device_token, _, _) in tokenList:
+                    print(AESCipher.bytesToBase64(HMACSHA256(seed, device_token).getBinDigest()))
+                    if d['wmt'] == device_token and d['psk'] == re.sub("[^A-Za-z0-9]", "", AESCipher.bytesToBase64(HMACSHA256(seed, device_token).getBinDigest())):
+                        return Response("", status=201)
+                return Response("", status=404)
             else:
                 return Response("", status=404)
     else:
