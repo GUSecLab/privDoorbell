@@ -1,5 +1,6 @@
 import json
 import re
+import os
 
 from flask import Response, Flask, render_template, request, abort
 
@@ -28,6 +29,8 @@ def auth():
     Authentication function for RTMP on_play callback.
     It checks two fields: <psk> and <wmt>, where <psk> should contain the password
     and <wmt> should contain the username (device_token).
+
+    <psk> = HMAC(seed, <wmt>).replaceAll("[^A-Za-z0-9]", "")
     '''
     d = request.form.to_dict()
     if 'psk' in d:
@@ -48,6 +51,26 @@ def auth():
                 return Response("", status=404)
     else:
         return Response("", status=404)
+
+@app_auth.route("/playAudio", methods = ['GET'])
+def play_audio():
+    d = request.form.to_dict()
+    try:
+        with open("registration.json", "r") as f:
+            tokenList = json.load(f)
+        for _, (device_token, _, _) in tokenList:
+            if d['wmt'] == device_token and d['psk'] == re.sub("[^A-Za-z0-9]", "", AESCipher.bytesToBase64(HMACSHA256(seed, device_token).getBinDigest())):
+                if d['audio'] == '1':
+                    os.system('aplay 1.wav')
+                elif d['audio'] == '2':
+                    os.system('aplay 2.wav')
+                elif d['audio'] == '3':
+                    os.system('aplay 3.wav')
+                else:
+                    os.system('aplay 4.wav')
+                return Response("", status=201)            
+        return Response("", status=404)
+    Response("", status=404)
 
 
 if __name__ == "__main__":
