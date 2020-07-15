@@ -23,7 +23,6 @@ import java.io.FileOutputStream;
 
 public class FirebaseMessageService extends FirebaseMessagingService{
     private static final String LOG_TAG = "FirebaseMessagingService";
-    public final static String HARDCODE_RPI_ADDRESS = "http://192.168.0.4:8080/register";
     public final static String HARDCODE_FIRST_KEY_STR = "1";
 
     @Override

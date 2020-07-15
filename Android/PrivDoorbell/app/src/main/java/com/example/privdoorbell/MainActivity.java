@@ -201,7 +201,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void switchToFragmentWifi() {
-        toastHelper("Preparing");
+        final String urlString = nsdHelper.getResolvedHostname();
+        if (urlString == null) {
+            toastHelper("mDNS isn't running.");
+            return;
+        } else {
+            if (fragmentManager != null) {
+                fragmentManager.beginTransaction().replace(R.id.fragment_main, new WebFragment(urlString)).commit();
+            }
+        }
     }
 
 

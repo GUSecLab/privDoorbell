@@ -31,6 +31,7 @@ public class StreamingActivity extends AppCompatActivity {
     public final static String LOG_TAG = "StreamingActivity";
     private static final boolean USE_TEXTURE_VIEW = false;
     private static final boolean ENABLE_SUBTITLES = true;
+    private static final String HARDCODE_VIDEO_KEY_STR = "2";
 
     private MediaController controller;
 
@@ -85,7 +86,15 @@ public class StreamingActivity extends AppCompatActivity {
             Log.e(LOG_TAG, "Streaming URL not available; aborting.");
         }
 
-        streaming_url = Utils.constructStreamingAddress(streaming_url);
+        // Calculate the Base64 key
+        String seed = b.getString("Seed");
+        HMAC HMACMachine = new HMAC(seed, HARDCODE_VIDEO_KEY_STR);
+        byte[] aes_key = HMACMachine.calcHmacSha256();
+        String pwd = CryptoHelper.bytesToBase64(aes_key);
+        pwd = pwd.replaceAll("[^A-Za-z0-9]", "");
+
+        streaming_url = Utils.constructStreamingAddress(streaming_url, pwd);
+        Log.v(LOG_TAG, "Full streaming address: " + streaming_url);
 
 
         if (!OrbotHelper.isOrbotRunning(this)) {

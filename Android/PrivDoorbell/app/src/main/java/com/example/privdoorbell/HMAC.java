@@ -31,7 +31,7 @@ public class HMAC {
             mac.init(generatedKey);
             hmacSha256 = mac.doFinal(message);
         } catch (Exception e) {
-            //Log.e(LOG_TAG, e.getMessage());
+            Log.e(LOG_TAG, e.getMessage());
         }
         return hmacSha256;
     }

@@ -16,7 +16,7 @@
     <item
         android:id="@+id/action_wifi"
         android:enabled="true"
-        android:icon="@drawable/ic_wifi"
-        android:title="Wifi"
+        android:icon="@drawable/ic_settings"
+        android:title="Control"
         app:showAsAction="ifRoom" />
 </menu>

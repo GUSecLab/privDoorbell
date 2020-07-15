@@ -28,6 +28,7 @@ public class StreamingFragment extends ListFragment {
     public final String LOG_TAG = "StreamingFragment";
     private Map<String, String> registration;
     List<Map<String, String>> hashmapdata;
+    List<Map<String, String>> hashmapdata_dup;
 
     /**
      * Constructor of this fragment. It is necessary to pass a context
@@ -61,22 +62,31 @@ public class StreamingFragment extends ListFragment {
 
         }
         else {
+            // This is for passing to StreamingActivity
             hashmapdata = new ArrayList<Map<String, String>>();
+            // This is for passing to ListView
+            hashmapdata_dup = new ArrayList<Map<String, String>>();
 
             for (Iterator<Map.Entry<String, String>> entries = registration.entrySet().iterator(); entries.hasNext();) {
                 Map.Entry<String, String> entry = entries.next();
                 Map<String, String> tmp_map = new HashMap<String, String>();
                 tmp_map.put("Seed", entry.getKey());
                 tmp_map.put("Hostname", entry.getValue());
+
+                Map<String, String> tmp_map_dup = new HashMap<String, String>();
+                tmp_map_dup.put("Seed", "Seed: " + entry.getKey());
+                tmp_map_dup.put("Hostname", "Hostname: " + entry.getValue());
+
                 Log.i(LOG_TAG, "Hashmapdata: " + entry.getKey() + entry.getValue());
                 hashmapdata.add(tmp_map);
+                hashmapdata_dup.add(tmp_map_dup);
             }
 
 
             String fromArray[] = {"Seed", "Hostname"};
             int toArray[] = {R.id.text_seed, R.id.text_host};
 
-            SimpleAdapter adapter = new SimpleAdapter(getActivity(), hashmapdata, R.layout.listview_text, fromArray, toArray);
+            SimpleAdapter adapter = new SimpleAdapter(getActivity(), hashmapdata_dup, R.layout.listview_text, fromArray, toArray);
 
             setListAdapter(adapter);
         }
@@ -94,6 +104,7 @@ public class StreamingFragment extends ListFragment {
         Intent intent = new Intent(getActivity(), StreamingActivity.class);
         Bundle b = new Bundle();
         b.putString("Hostname", hashmapdata.get(pos).get("Hostname"));
+        b.putString("Seed", hashmapdata.get(pos).get("Seed"));
         intent.putExtras(b);
         startActivity(intent);
     }

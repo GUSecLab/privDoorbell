@@ -49,8 +49,11 @@ public class Utils {
     }
 
     public static String constructStreamingAddress(String onion_hostname) {
-        Log.i(LOG_TAG, "streamaddress: ");
         return "http://" + onion_hostname + ":8000/live?port=1935&app=live&stream=mystream";
+    }
+
+    public static String constructStreamingAddress(String onion_hostname, String pwd) {
+        return "http://" + onion_hostname + ":8000/live?port=1935&app=live&stream=mystream&psk=" + pwd;
     }
 
     public static List<String> getConfFileNames() {
