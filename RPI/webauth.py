@@ -41,7 +41,7 @@ def auth():
                 with open("registration.json", "r") as f:
                     tokenList = json.load(f)
                 print(d['wmt'], d['psk'])
-                for _, (device_token, _, _) in tokenList:
+                for _, (device_token, _, _) in tokenList.items():
                     print(AESCipher.bytesToBase64(HMACSHA256(seed, device_token).getBinDigest()))
                     if d['wmt'] == device_token and d['psk'] == re.sub("[^A-Za-z0-9]", "", AESCipher.bytesToBase64(HMACSHA256(seed, device_token).getBinDigest())):
                         return Response("", status=201)
@@ -57,7 +57,7 @@ def play_audio():
     try:
         with open("registration.json", "r") as f:
             tokenList = json.load(f)
-        for _, (device_token, _, _) in tokenList:
+        for _, (device_token, _, _) in tokenList.items():
             if d['wmt'] == device_token and d['psk'] == re.sub("[^A-Za-z0-9]", "", AESCipher.bytesToBase64(HMACSHA256(seed, device_token).getBinDigest())):
                 if d['audio'] == '1':
                     os.system('aplay 1.wav')
