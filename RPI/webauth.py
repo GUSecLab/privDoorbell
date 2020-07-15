@@ -53,7 +53,7 @@ def auth():
 
 @app_auth.route("/playAudio", methods = ['GET'])
 def play_audio():
-    d = request.form.to_dict()
+    d = request.args.to_dict()
     with open("registration.json", "r") as f:
         tokenList = json.load(f)
     for _, (device_token, _, _) in tokenList.items():
