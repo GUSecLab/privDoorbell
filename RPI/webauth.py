@@ -17,7 +17,7 @@ except:
     exit(0)
 
 
-HMACMachine = HMACSHA256(seed, "1")
+HMACMachine = HMACSHA256(seed, "2")
 pwd = re.sub("[^A-Za-z0-9]", "", AESCipher.bytesToBase64(HMACMachine.getBinDigest())) 
 
 print("Password: " + pwd, flush=True)

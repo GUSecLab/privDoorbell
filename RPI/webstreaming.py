@@ -47,7 +47,7 @@ except:
     exit(0)
 
 # Don't forget to remove special chars
-HMACMachine = HMACSHA256(seed, "1")
+HMACMachine = HMACSHA256(seed, "2")
 pwd = re.sub("[^A-Za-z0-9]", "", AESCipher.bytesToBase64(HMACMachine.getBinDigest())) 
 
 RTMP_ADDR = 'rtmp://127.0.0.1:1935/live/mystream' + '?psk=' + pwd
