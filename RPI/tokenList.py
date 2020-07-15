@@ -10,9 +10,9 @@ class TokenList(object):
     
     def insert(self, firebase_token: str, timestamp: str, device_token: str, nickname = ""):
         if not firebase_token in self.d:
-            self.d[token] = (device_token, StringHelper.timestamp2Readable(timestamp), nickname)
+            self.d[firebase_token] = (device_token, StringHelper.timestamp2Readable(timestamp), nickname)
         else:
-            self.d[token] = (device_token, StringHelper.timestamp2Readable(timestamp), nickname)
+            self.d[firebase_token] = (device_token, StringHelper.timestamp2Readable(timestamp), nickname)
 
     def delete(self, token: str):
         if token in self.d:
