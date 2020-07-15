@@ -69,8 +69,9 @@ def play_audio():
                 else:
                     os.system('aplay 4.wav')
                 return Response("", status=201)            
+    except:
         return Response("", status=404)
-    Response("", status=404)
+    return Response("", status=404)
 
 
 if __name__ == "__main__":
