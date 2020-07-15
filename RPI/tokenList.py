@@ -1,5 +1,6 @@
 import time
 import datetime
+import json
 from utils.helper import StringHelper
 
 class TokenList(object):
@@ -7,11 +8,11 @@ class TokenList(object):
     def __init__(self):
         self.d = dict()
     
-    def insert(self, token: str, timestamp: str, nickname = ""):
-        if not token in self.d:
-            self.d[token] = (StringHelper.timestamp2Readable(timestamp), nickname)
+    def insert(self, firebase_token: str, timestamp: str, device_token: str, nickname = ""):
+        if not firebase_token in self.d:
+            self.d[token] = (device_token, StringHelper.timestamp2Readable(timestamp), nickname)
         else:
-            pass
+            self.d[token] = (device_token, StringHelper.timestamp2Readable(timestamp), nickname)
 
     def delete(self, token: str):
         if token in self.d:
@@ -29,6 +30,10 @@ class TokenList(object):
     def getDict(self):
         return self.d
 
+    def dump(self):
+        # Make sure the file is only written by this method; otherwise you'll need a lock
+        with open("registration.json", "w") as f:
+            json.dump(self.d, f)
 
 # Unit test
 if __name__ == "__main__":

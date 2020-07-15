@@ -24,12 +24,28 @@ print("Password: " + pwd, flush=True)
 
 @app_auth.route("/auth", methods = ['POST'])
 def auth():
+    '''
+    Authentication function for RTMP on_play callback.
+    It checks two fields: <psk> and <wmt>, where <psk> should contain the password
+    and <wmt> should contain the username (device_token).
+    '''
     d = request.form.to_dict()
     if 'psk' in d:
         if d['psk'] == pwd:
             return Response("", status=201)
         else:
-            return Response("", status=404)
+            if 'wmt' in d:
+                try:
+                    with open("registration.json", "r") as f:
+                        tokenList = json.load(f)
+                    for _, (device_token, _, _) in tokenList:
+                        if d['wmt'] == device_token and d['psk'] == re.sub("[^A-Za-z0-9]", "", AESCipher.bytesToBase64(HMACSHA256(seed, device_token).getBinDigest())):
+                            return Response("", status=201)
+                    return Response("", status=404)
+                except:
+                    return Response("", status=404)
+            else:
+                return Response("", status=404)
     else:
         return Response("", status=404)
 

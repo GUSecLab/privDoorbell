@@ -8,11 +8,15 @@ class StringHelper():
 
     @staticmethod
     def extractFromPassedDict(d: dict):
+        '''
+        Return (firebase_token, nickname, device_token)
+        '''
         for k, v in d.items():
             json_string = k
         r = json.loads(json_string)
-        for k, v in r.items():
-            return (k, v)
+        if (not 'firebase_token' in r) or (not 'nickname' in r) or (not 'device_token' in r):
+            raise Exception("Bad response")
+        return r['firebase_token'], r['nickname'], r['device_token']
         
     @staticmethod
     def timestamp2Readable(timestamp):

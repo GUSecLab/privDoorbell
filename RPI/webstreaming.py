@@ -176,9 +176,10 @@ def register():
         return Param.HTTP_DEFAULT_RETURN
         
         
-    token, nickname = StringHelper.extractFromPassedDict(data)
-    tokens.insert(token, time.time(), nickname)
+    firebase_token, nickname, device_token = StringHelper.extractFromPassedDict(data)
+    tokens.insert(firebase_token, time.time(), device_token, nickname)
     print("register(): Returned " + ret_msg)
+    tokens.dump()
     return ret_msg
 
 @app.route("/video_feed")

@@ -23,13 +23,15 @@
     <table>
         <tr>
             <th>Token</th>
+            <th>ID</th>
             <th>Nickname</th>
             <th>Time registered</th>
             <th>Operation</th>
         </tr>
-        {% for token, (timestamp, nickname) in tokens.items() %}
+        {% for token, (device_token, timestamp, nickname) in tokens.items() %}
         <tr>
             <td>{{ token[:5] }}</td>
+            <td>{{ device_token }}</td>
             <td> {{ nickname }} </td>
             <td> {{ timestamp }}</td>
             <td>
