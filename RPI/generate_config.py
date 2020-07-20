@@ -11,11 +11,13 @@ with open("seed.conf") as f:
 
 with open("hostname.conf") as f:
     hostname = f.read().strip()
+    hostname = hostname.split()
 
 
 d = {
     "seed": seed,
-    "onion_hostname": hostname,
+    "onion_hostname": hostname[0],
+    "onion_auth_cookie": hostname[1],
     "detector_file": None,
     "detector_scaleFactor": 1.3,
     "detector_minNeighbors": 3,
