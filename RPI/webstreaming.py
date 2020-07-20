@@ -165,13 +165,13 @@ def register():
     print("register(): " + str(data), flush=True)
 
     # Delimiter
-    ret_msg = "---"
+    delim = "---"
 
     # If either is not available, return an error string
     try:
         with open("config.json") as f:
             settings = json.load(f)
-            ret_msg = settings['seed'] + ret_msg + settings['onion_hostname']
+            ret_msg = settings['seed'] + delim + settings['onion_hostname'] + delim + settings['onion_auth_cookie']
     except:
         return Param.HTTP_DEFAULT_RETURN
         
