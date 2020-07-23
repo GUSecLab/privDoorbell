@@ -84,7 +84,7 @@ def send_to_token(token: str, msg_type='face'):
     timestamp = str(time.time())
     '''
     timestamp = str(time.time())
-    plaintext = "type: {}, timestamp: {}".format(msg_type, timestamp)
+    plaintext = "type: {}; timestamp: {}".format(msg_type, timestamp)
     ciphertext, tag = AESMachine.encrypt_base64(plaintext)
     # Restruct:
     # message = {
