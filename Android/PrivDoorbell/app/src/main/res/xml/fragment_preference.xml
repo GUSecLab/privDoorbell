@@ -21,6 +21,28 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory
+        app:key="audio_category"
+        app:title="Audio">
+        <EditTextPreference
+            android:defaultValue="Hello!"
+            app:key="audio2"
+            app:useSimpleSummaryProvider="true"
+            app:title="Customize text for audio button 1"
+            />
+        <EditTextPreference
+            android:defaultValue="What are you doing?"
+            app:key="audio3"
+            app:useSimpleSummaryProvider="true"
+            app:title="Customize text for audio button 2"
+            />
+        <EditTextPreference
+            android:defaultValue="Bye!"
+            app:key="audio4"
+            app:useSimpleSummaryProvider="true"
+            app:title="Customize text for audio button 3"
+            />
+    </PreferenceCategory>
 
     <PreferenceCategory
         app:key="privacy_category"

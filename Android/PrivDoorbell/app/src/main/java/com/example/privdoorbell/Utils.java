@@ -7,6 +7,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +16,11 @@ import java.util.Map;
 public class Utils {
     public static final String LOG_TAG = "Utils";
 
-
+    /**
+     * Split response into a list.
+     * @param res Response in format "Seed---Hostname---authcookie".
+     * @return List<String> {Seed, Hostname, authcookie}
+     */
     public static List<String> splitResponseToSeedAndHostname(String res) {
         if (res == null) {
             throw new NullPointerException();
@@ -27,8 +32,15 @@ public class Utils {
         }
         else {
             String[] parts = res.split("---");
-            list.add(parts[0]);
-            list.add(parts[1]);
+            try {
+                list.add(parts[0]);
+                list.add(parts[1]);
+                list.add(parts[2]);
+            } catch (IndexOutOfBoundsException e) {
+                Log.e(LOG_TAG, "The res string is incorrect.");
+                return null;
+            }
+
 
             return list;
         }
@@ -48,12 +60,12 @@ public class Utils {
         return "http:/" + hostname + ":8080/register";
     }
 
-    public static String constructStreamingAddress(String onion_hostname) {
-        return "http://" + onion_hostname + ":8000/live?port=1935&app=live&stream=mystream";
+    public static String constructStreamingAddress(String onion_hostname, String pwd, String device_token) {
+        return "http://" + onion_hostname + ":8000/live?port=1935&app=live&stream=mystream" + "&psk=" + pwd + "&wmt=" + device_token;
     }
 
-    public static String constructStreamingAddress(String onion_hostname, String pwd) {
-        return "http://" + onion_hostname + ":8000/live?port=1935&app=live&stream=mystream&psk=" + pwd;
+    public static String constructPlayAudioAddress(String onion_hostname, String pwd, String device_token, String audioFileID) {
+        return "http://" + onion_hostname + ":8081/playAudio" + "?psk=" + pwd + "&wmt=" + device_token + "&audio=" + audioFileID;
     }
 
     public static List<String> getConfFileNames() {
@@ -77,7 +89,7 @@ public class Utils {
 
     }
 
-    protected static String readStringFromInternalFile(Context context, String filename) {
+    static String readStringFromInternalFile(Context context, String filename) {
         File path = context.getFilesDir();
         File file = new File(path, filename);
 
@@ -99,6 +111,33 @@ public class Utils {
         return contents;
     }
 
+    static void writeToInternalFile(Context context, String filename, String data) {
+        File path = context.getFilesDir();
+        File file = new File(path, filename);
+        Log.i(LOG_TAG, "Starting writing " + data + "to " + filename);
+
+        try{
+            // TODO: Handle the actual exceptions
+            FileOutputStream stream = new FileOutputStream(file);
+            stream.write(data.getBytes());
+            stream.close();
+        } catch (Exception e) {
+            Log.e(LOG_TAG, e.getMessage());
+        }
+    }
+
+    static String devicetokenToPwd(String seed, String device_token) {
+        HMAC HMACMachine_dup = new HMAC(seed, device_token);
+        byte[] aes_key = HMACMachine_dup.calcHmacSha256();
+        String pwd = CryptoHelper.bytesToBase64(aes_key);
+        pwd = pwd.replaceAll("[^A-Za-z0-9]", "");
+        return pwd;
+    }
+
+
+    static String torrcConfig(String hostname, String auth_cookie) {
+        return "HidServAuth " + hostname + " " + auth_cookie;
+    }
 
     /**
      * A wrapper for org.json.

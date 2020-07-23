@@ -21,7 +21,7 @@ public class WebFragment extends Fragment {
         if (url == null) {
             Log.e(LOG_TAG, "url not existing!");
         }
-        urlString = "http:/" + url + ":8080";
+        urlString = url;
     }
 
     @Override

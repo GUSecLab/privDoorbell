@@ -14,6 +14,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
+import java.io.File;
+import java.security.SecureRandom;
+
 public class EntryActivity extends AppCompatActivity {
     private final String LOG_TAG = "EntryActivity";
     private final int SPLASH_DISPLAY_LENGTH = 1400;
@@ -62,6 +65,16 @@ public class EntryActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
+        // Generate device token for authentication
+        File device_token_file = new File(getFilesDir(), "device_token.conf");
+        if (!device_token_file.exists()) {
+            String device_token;
+            SecureRandom rand = new SecureRandom();
+            device_token = String.valueOf(rand.nextInt(10000));
+            Utils.writeToInternalFile(this, "device_token.conf", device_token);
+        }
+
         new Handler().postDelayed(new Runnable(){
             @Override
             public void run() {

@@ -2,14 +2,20 @@ package com.example.privdoorbell;
 
 import android.os.Bundle;
 import android.view.Menu;
+import android.webkit.WebView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 public class AboutActivity extends AppCompatActivity {
 
+    private FragmentManager fragmentManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState){
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar_main);
@@ -19,7 +25,15 @@ public class AboutActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
 
-        super.onCreate(savedInstanceState);
+
+        fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        fragmentTransaction.add(R.id.fragment_about, new WebFragment("https://guseclab.github.io/privDoorbell/about.html"));
+        fragmentTransaction.commit();
+
+
+
     }
 
 

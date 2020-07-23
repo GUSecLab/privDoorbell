@@ -73,7 +73,7 @@ public class NSDDiscover {
             public void onServiceFound(NsdServiceInfo service) {
                 // A service was found! Do something with it.
                 Log.d(LOG_TAG, "Service discovery success" + service + service.getServiceName());
-                if (service.getServiceName().contains("raspberrypi")) {
+                if (service.getServiceName().contains("privdoorbell")) {
                     nsdManager.resolveService(service, initializeResolveListener());
                 }
             }

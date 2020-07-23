@@ -1,6 +1,9 @@
 package com.example.privdoorbell;
 
 import android.Manifest;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -201,13 +204,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void switchToFragmentWifi() {
-        final String urlString = nsdHelper.getResolvedHostname();
+        String urlString = nsdHelper.getResolvedHostname();
         if (urlString == null) {
             toastHelper("mDNS isn't running.");
             return;
         } else {
             if (fragmentManager != null) {
-                fragmentManager.beginTransaction().replace(R.id.fragment_main, new WebFragment(urlString)).commit();
+                fragmentManager.beginTransaction().replace(R.id.fragment_main, new WebFragment("http:/" + urlString + ":8080")).commit();
             }
         }
     }
@@ -286,14 +289,17 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String ... params) {
             String urlString = params[0];
-            String token = params[1];
+            String firebase_token = params[1];
             String nickname = params[2];
+            String device_token = params[3];
             OutputStream out = null;
 
 
             JSONObject jsonParam = new JSONObject();
             try {
-                jsonParam.put(token, nickname);
+                jsonParam.put("firebase_token", firebase_token);
+                jsonParam.put("nickname", nickname);
+                jsonParam.put("device_token", device_token);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -363,14 +369,28 @@ public class MainActivity extends AppCompatActivity {
                 pb.setVisibility(View.GONE);
                 return;
             }
-            writeToInternalFile("seed.conf", res_list.get(0));
-            writeToInternalFile("hostname.conf", res_list.get(1));
+
+            writeConfig(res_list.get(0), res_list.get(1), res_list.get(2));
+
             Log.v(LOG_TAG, "ProgressBar is dead.");
             String seed = res_list.get(0);
             Log.i(LOG_TAG, "Seed: " + seed);
-            toastHelper("Registration completed. Seed: " + seed);
+
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("torrc config", Utils.torrcConfig(res_list.get(1), res_list.get(2)));
+            clipboard.setPrimaryClip(clip);
+
+            toastHelper("Registration completed. Config copied to clipboard; please add this to your orbot settings.");
+
+
             ProgressBar pb = (ProgressBar) findViewById(R.id.registration_progressbar);
             pb.setVisibility(View.GONE);
+        }
+
+        protected void writeConfig(String seed, String hostname, String auth_cookie) {
+            writeToInternalFile("seed.conf", seed);
+            writeToInternalFile("hostname.conf", hostname);
+            writeToInternalFile("authcookie.conf", auth_cookie);
         }
 
         protected void writeToInternalFile(String filename, String data) {
@@ -431,11 +451,20 @@ public class MainActivity extends AppCompatActivity {
         // Do the actual registration work
         Log.i(LOG_TAG, "Register button pushed.");
 
-        File tokenfile = new File(getFilesDir(), "token.txt");
-        if (tokenfile.exists()) {
+        File firebase_tokenfile = new File(getFilesDir(), "token.txt");
+        File device_tokenfile = new File(getFilesDir(), "device_token.conf");
+
+        if (!device_tokenfile.exists()) {
+            Log.e(LOG_TAG, "Device token file not found; aborting.");
+            return;
+        }
+
+        final String device_token = readStringFromInternalFile("device_token.conf");
+
+        if (firebase_tokenfile.exists()) {
             Log.i(LOG_TAG, "getIdAndSendToServer(): Reading existing token");
-            String token = readStringFromInternalFile("token.txt");
-            sendRegistrationToServer(token, nickname);
+            String firebase_token = readStringFromInternalFile("token.txt");
+            sendRegistrationToServer(firebase_token, nickname, device_token);
             deleteFile("token.txt");
         }
         else{
@@ -453,8 +482,8 @@ public class MainActivity extends AppCompatActivity {
                             }
 
                             // Get new Instance ID token
-                            String token = task.getResult().getToken();
-                            sendRegistrationToServer(token, nickname);
+                            String firebase_token = task.getResult().getToken();
+                            sendRegistrationToServer(firebase_token, nickname, device_token);
                         }
                     });
         }
@@ -465,13 +494,13 @@ public class MainActivity extends AppCompatActivity {
      * Send given token to the registered local server.
      * The function obtains the address from nsdHelper, and fails
      * if the nsd service is not ready.
-     * @param token
+     * @param firebase_token
      * @return 0 if the registration is completed (i.e. the POST
      * request is sent whether successfully or not.
      * -1 if no address is obtained from nsd service.
      */
-    public int sendRegistrationToServer(String token, String nickname){
-        Log.i(LOG_TAG, "sendRegistrationToServer(): sending " + token + "; " + nickname);
+    public int sendRegistrationToServer(String firebase_token, String nickname, String device_token){
+        Log.i(LOG_TAG, "sendRegistrationToServer(): sending " + firebase_token + "; " + nickname + "; " + device_token);
         if (nsdHelper == null) {
             Log.e(LOG_TAG, "sendRegistrationToServer(): nsdHelper has shut down.");
             toastHelper("mDNS service is not running!");
@@ -496,7 +525,7 @@ public class MainActivity extends AppCompatActivity {
         // String targetURL = "http://priviot.cs-georgetown.net:8080/register";
         // targetURL = HARDCODE_RPI_ADDRESS;
 
-        new PostCall().execute(targetURL, token, nickname);
+        new PostCall().execute(targetURL, firebase_token, nickname, device_token);
         // Log.i(LOG_TAG, "Seed: " + seed);
 
         // Deprecated. This will possibly read the old seed.
