@@ -104,6 +104,7 @@ def send_to_token(token: str, msg_type='face'):
         data={
             ciphertext+tag+AESMachine.getIV_base64(): '',
         }
+        token=token,
     )
     response = messaging.send(message)
     print("send_to_token(): " + str({
