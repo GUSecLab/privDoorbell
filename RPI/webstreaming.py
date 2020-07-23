@@ -75,13 +75,21 @@ def send_to_token(token: str, msg_type='face'):
     except:
         print("Seed is not available. Try running init script again.", flush=True)
         return
-        
+    
+
     HMACMachine = HMACSHA256(seed, "1")
     AESMachine = AESCipher(HMACMachine.getBinDigest())
-
+    '''
     ciphertext, tag = AESMachine.encrypt_base64(msg_type)
     timestamp = str(time.time())
-
+    '''
+    plaintext = "type: {}, timestamp: {}".format(msg_type, str(time.time()))
+    ciphertext, tag = AESMachine.encrypt_base64(plaintext)
+    # Restruct:
+    # message = {
+    # 'encrypted("type: face; timestamp: timestamp") + tag(24 char) + iv(16 char)' : '',
+    # }
+    '''
     message = messaging.Message(
         data={
             'type': ciphertext,
@@ -90,6 +98,12 @@ def send_to_token(token: str, msg_type='face'):
             'timestamp': timestamp
         },
         token=token,
+    )
+    '''
+    message = messaging.Message(
+        data={
+            ciphertext+tag+AESMachine.getIV_base64(): '',
+        }
     )
     response = messaging.send(message)
     print("send_to_token(): " + str({
