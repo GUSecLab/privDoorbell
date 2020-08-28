@@ -41,7 +41,7 @@
 					<div class="text-container">
 						<h3 class="app__main__title">Install and configure Tor</h3>
 						
-						<p>Install Tor</p>
+						<p>Install Tor:</p>
 
 <!-- Seperate block for pre oddness -->
 <div class="pre_container">	
@@ -55,15 +55,19 @@
 <div class="pre_container">	
 <pre>cd /etc/tor/
 sudo cp torrc torrc.default
-wget
+wget https://raw.githubusercontent.com/GUSecLab/privDoorbell/master/RPI/conf/torrc
 </pre>
 </div>	
 <!-- Seperate block for pre oddness -->
 						
-
-					
-					  <p>Check out <a herf="https://projects.raspberrypi.org/en/projects/raspberry-pi-getting-started">Getting started with Raspberry Pi</a> for introduction to Raspberry Pi.</p>
-                    </div>
+						<p>Restart Tor:</p>
+<!-- Seperate block for pre oddness -->
+<div class="pre_container">	
+<pre>sudo service tor restart
+</pre>
+</div>	
+<!-- Seperate block for pre oddness -->
+					</div>
 				</div>
 			</div>
 		</div>
