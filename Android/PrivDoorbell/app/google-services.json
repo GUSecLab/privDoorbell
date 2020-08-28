@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "239556133044",
+    "firebase_url": "https://privdoorbell.firebaseio.com",
+    "project_id": "privdoorbell",
+    "storage_bucket": "privdoorbell.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:239556133044:android:48b5433844b8d0dc8e57e1",
+        "android_client_info": {
+          "package_name": "com.example.privdoorbell"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "239556133044-thvk7qjnt9ksca6pv8hsdn3itk8b23ln.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDv5TZ4KPoyXafLEAMNSNfzcLnpZ73SWRU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "239556133044-thvk7qjnt9ksca6pv8hsdn3itk8b23ln.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
