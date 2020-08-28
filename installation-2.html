@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta class="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>Installation Guide | PrivDoorbell</title>
+	<link rel="stylesheet" href="css/style.min.css" />
+</head>
+<body>
+	<!-- navbar -->
+	<div class="navbar">
+		<nav class="nav__mobile"></nav>
+		<div class="container">
+			<div class="navbar__inner">
+				<a href="./index.html" class="navbar__logo">PrivDoorbell</a>
+				<nav class="navbar__menu">
+					<ul>
+						<li><a href="#">User Manual</a></li>
+						<li><a href="./about.html">About</a></li>
+					</ul>
+				</nav>
+				<div class="navbar__menu-mob"><a href="" id="toggle"><svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z" class=""></path></svg></a></div>
+			</div>
+		</div>
+	</div>
+	<!-- Page content -->
+	<div class="app">
+		<div class="container">
+			<div class="app__inner">
+				<div class="app__menu">
+					<ul class="vMenu">
+						<li><a href="./installation-0.html"><strike>Getting started</strike></a></li>
+						<li><a href="./installation-1.html"><strike>Install the dependencies</strike></a></li>
+						<li><a href="#" class="vMenu--active">Compile and configure Nginx</a></li>
+						<li><a href="./installation-3.html">Install and configure Tor</a></li>
+						<li><a href="./installation-4.html">Start the local services</a></li>
+						<li><a href="./installation-5.html">Play with the Android client app</a></li>
+					</ul>
+				</div>
+				<div class="app__main">
+					<div class="text-container">
+						<h3 class="app__main__title">Install and configure Nginx</h3>
+					  <p>Get the stable version of NGINX:</p>
+
+<!-- Seperate block for pre oddness -->
+<div class="pre_container">	
+<pre>wget http://nginx.org/download/nginx-1.18.0.tar.gz</pre>
+</div>	
+<!-- Seperate block for pre oddness -->
+					
+					  <p>You can get any version you like, but it's recommended that you get a copy of 1.18.0 for guarantee of working.</p>
+					  <p>Install dependencies:</p>
+
+<!-- Seperate block for pre oddness -->
+<div class="pre_container">	
+<pre>sudo apt-get update
+sudo apt-get install libpcre3 libpcre3-dev
+sudo apt-get install openssl libssl-dev</pre>
+</div>	
+<!-- Seperate block for pre oddness -->					  
+
+					  <p>Get the http-flv-module:</p>
+
+<!-- Seperate block for pre oddness -->
+<div class="pre_container">	
+<pre>git clone https://github.com/winshining/nginx-http-flv-module.git</pre>
+</div>	
+<!-- Seperate block for pre oddness -->		
+
+					  <p>Compile NGINX with the module:</p>
+
+<!-- Seperate block for pre oddness -->
+<div class="pre_container">	
+<pre>tar -zxvf nginx-1.18.0.tar.gz
+cd nginx-1.18.0
+./configure --add-module=../nginx-hyyp-flv-module
+make
+sudo make install
+</pre>
+</div>	
+<!-- Seperate block for pre oddness -->		
+
+						<HR style="FILTER: alpha(opacity=100,finishopacity=0,style=3)" width="100%" color=#987cb9 SIZE=3>
+
+						<h4>Configure NGINX</h4>
+						<p>Now NGINX should have been installed at <code>/usr/local/nginx</code>.</p>
+						<p>Switch to the conf folder and copy the configuration file (and never forget to make a backup):</p>
+<!-- Seperate block for pre oddness -->
+<div class="pre_container">	
+<pre>cd /usr/local/nginx/conf
+sudo cp nginx.conf nginx.conf.default
+wget 
+</pre>
+</div>	
+<!-- Seperate block for pre oddness -->		
+
+						<p>[Optional] Add the nginx.service file to systemd so that you can manage NGINX using service:</p>
+<!-- Seperate block for pre oddness -->
+<div class="pre_container">	
+<pre>cd /lib/systemd/system
+sudo vim nginx.service // Paste the following lines into the service file.
+</pre>
+</div>	
+<!-- Seperate block for pre oddness -->							
+<!-- Seperate block for pre oddness -->
+<div class="pre_container">	
+<pre># /lib/systemd/system/nginx.service
+[Unit]
+Description=The NGINX HTTP and reverse proxy server
+After=syslog.target network-online.target remote-fs.target nss-lookup.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+PIDFile=/usr/local/nginx/logs/nginx.pid
+ExecStartPre=/usr/local/nginx/sbin/nginx -t
+ExecStart=/usr/local/nginx/sbin/nginx
+ExecReload=/usr/local/nginx/sbin/nginx -s reload
+ExecStop=/bin/kill -s QUIT $MAINPID
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+</pre>
+</div>	
+<!-- Seperate block for pre oddness -->	
+
+					
+                    </div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+<script src="js/app.min.js"></script>
+</body>
+</html>

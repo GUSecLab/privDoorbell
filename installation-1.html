@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta class="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>Installation Guide | PrivDoorbell</title>
+	<link rel="stylesheet" href="css/style.min.css" />
+</head>
+<body>
+	<!-- navbar -->
+	<div class="navbar">
+		<nav class="nav__mobile"></nav>
+		<div class="container">
+			<div class="navbar__inner">
+				<a href="./index.html" class="navbar__logo">PrivDoorbell</a>
+				<nav class="navbar__menu">
+					<ul>
+						<li><a href="#">User Manual</a></li>
+						<li><a href="./about.html">About</a></li>
+					</ul>
+				</nav>
+				<div class="navbar__menu-mob"><a href="" id="toggle"><svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z" class=""></path></svg></a></div>
+			</div>
+		</div>
+	</div>
+	<!-- Page content -->
+	<div class="app">
+		<div class="container">
+			<div class="app__inner">
+				<div class="app__menu">
+					<ul class="vMenu">
+						<li><a href="./installation-0.html"><strike>Getting started</strike></a></li>
+						<li><a href="./installation-1.html" class="vMenu--active">Install the dependencies</a></li>
+						<li><a href="./installation-2.html">Compile and configure Nginx</a></li>
+						<li><a href="./installation-3.html">Install and configure Tor</a></li>
+						<li><a href="./installation-4.html">Start the local services</a></li>
+						<li><a href="./installation-5.html">Play with the Android client app</a></li>
+					</ul>
+				</div>
+				<div class="app__main">
+					<div class="text-container">
+					  <h3 class="app__main__title">Install the dependencies</h3>
+					    <hr style="FILTER: alpha(opacity=100,finishopacity=0,style=3)" width="100%" color="#987cb9" SIZE="3">
+					  
+						<h4>Python</h4>
+						The server is based on Python/Flask. Install Python3 and pip if not yet installed:
+					    <div class="pre_container">
+							
+<!-- Seperate block for pre oddness -->
+							
+<pre>sudo apt-get install python3
+sudo apt-get install python3-pip</pre>
+						
+						
+<!-- Seperate block for pre oddness -->
+							
+						</div>
+						
+						<p> And the Python packages:</p>
+
+<!-- Seperate block for pre oddness -->
+<div class="pre_container">	
+<pre>sudo pip3 install firebase-admin==4.3.0 Flask==1.0.2 gpiozero==1.5.1 imutils==0.5.3 Jinja2==2.10 numpy==1.16.2 protobuf==3.12.2 pycryptodomex==3.9.7</pre>
+</div>	
+<!-- Seperate block for pre oddness -->
+							
+						
+						
+						<p>It is strongly recommended that you install the exactly same version.</p>
+	
+						<hr style="FILTER: alpha(opacity=100,finishopacity=0,style=3)" width="100%" color="#987cb9" SIZE="3">
+						<h4> OpenCV </h4>
+						<p>The project needs OpenCV and its python wrapper. Installing opencv-python is a bit tricky on Raspberry Pi. Be aware of never running <code> pip3 install opencv-python</code> or <code> pip3 install opencv-python --upgrade</code>. The newest version of opencv-python does NOT work on Raspberry Pi. </p>
+<!-- Seperate block for pre oddness -->
+<div class="pre_container">	
+<pre>sudo apt-get install python3-opencv
+sudo apt-get install libhdf5-dev
+sudo apt-get install libhdf5-serial-dev
+sudo apt-get install libatlas-base-dev
+sudo apt-get install libjasper-dev 
+sudo apt-get install libqtgui4 
+sudo apt-get install libqt4-test</pre>
+</div>	
+<!-- Seperate block for pre oddness -->						
+						
+						
+						<hr style="FILTER: alpha(opacity=100,finishopacity=0,style=3)" width="100%" color="#987cb9" SIZE="3">
+						<h4> FFmpeg </h4>
+						
+<!-- Seperate block for pre oddness -->
+<div class="pre_container">	
+<pre>sudo apt-get install ffmpeg</pre>
+</div>	
+<!-- Seperate block for pre oddness -->	
+			</div>
+		</div>
+	</div>
+
+<script src="js/app.min.js"></script>
+</body>
+</html>

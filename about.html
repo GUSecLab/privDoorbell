@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+	<meta class="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>About | PrivDoorbell</title>
+	<link rel='stylesheet' href='css/style.min.css' />
+</head>
+<body>
+	<!-- navbar -->
+	<div class="navbar">
+		<nav class="nav__mobile"></nav>
+		<div class="container">
+			<div class="navbar__inner">
+				<a href="./index.html" class="navbar__logo">PrivDoorbell</a>
+				<nav class="navbar__menu">
+					<ul>
+						<li><a href="./installation-0.html">User Manual</a></li>
+						<li><a href="#">About</a></li>
+					</ul>
+				</nav>
+				<div class="navbar__menu-mob"><a href="" id='toggle'><svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z" class=""></path></svg></a></div>
+			</div>
+		</div>
+	</div>
+	<!-- Page content -->
+	<div class="app">
+		<div class="container">
+			<div class="app__inner">
+				<div class="app__menu">
+					<ul class="vMenu">
+						<li><h3>Table of contents</h3></li>
+						<li><a href="#technical">Technical Overview</a></li>
+						<li><a href="#usability">Usability</a></li>
+						<li><a href="#">Showcases</a></li>
+					</ul>
+				</div>
+				<div class="app__main">
+					<div class="text-container">
+						<h2 class="app__main__title">PrivDoorbell</h2>
+						<p><i>PrivDoorbell</i> is a open source project, aiming to provide a privacy preserving video doorbell solution.</p>
+						
+						<a id="technical"><h3>Technical Overview</h3></a>
+						<p>Here we present an overview of techniques and security schemes used in this project. </p>
+						
+						<h4>Open source</h4>
+						<p>Check out the source code: <a href="https://github.com/GUSecLab/privDoorbell"><u>GUSecLab/PrivDoorbell - Github</u></a></p>
+						
+
+						<h4>Multiple authentications</h4>
+						<p>PrivDoorbell service adapts several authentication methods.</p>
+						
+						<li>
+							RTMP authentication: Introduced by <a href="https://github.com/arut/nginx-rtmp-module"><u>Nginx-rtmp-module</u></a>, the system asks the client to provide additional credientials (in the form of GET arguments) in order to access the stream.
+						</li>
+						<li>
+							Onion authentication v2: Provided by Tor, the system requires the client to have certain credientials configured in there Tor/Orbot settings in order to access the stream.
+						</li>
+
+						<h4>Limited access</h4>
+						<p>In addition to all those authentication schemes, the PrivDoorbell devices are designed to deny all unnecessary access. Limited access prevents attackers from getting control of IoT devices and eliminates a lot of vulnerabilities.</p>
+						<table>
+							<tr>
+								<th>Port</th>
+								<th>Service</th>
+								<th>Accessibility</th>
+							</tr>
+							<tr>
+								<td>1935 </td>
+								<td>RTMP stream</td>
+								<td>Denied</td>
+							</tr>
+							<tr>
+								<td>8000 </td>
+								<td>Video feed in flv/HTTP</td>
+								<td>Only through Tor, direct access denied</td>
+							</tr>
+							<tr>
+								<td>8080 </td>
+								<td>User portal</td>
+								<td>Only from local network</td>
+							</tr>
+							<tr>
+								<td>8081 </td>
+								<td>Authentication</td>
+								<td>Only through Tor, direct access denied</td>
+							</tr>
+						</table>
+
+						<h4>Noise feature</h4>
+						<p>The server sends a message every 5 second regardless of whether there is a visitor or not. By adding these dummy messages, the system makes it safe to utilize third-party pushing service (like Firebase Messaging) without exposing privacy to these providers.
+						
+						</p>
+
+						<a id="usability"><h3>Usability</h3></a>
+
+						<h4>Basic usabilities</h4>
+						<h4>Face detection</h4>
+						<h4>NAT-piercing</h4>
+						<h4>Answer to your visitors</h4>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+<script src='js/app.min.js'></script>
+</body>
+</html>
