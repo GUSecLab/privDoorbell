@@ -1,13 +1,14 @@
 import json
 import re
 import os
+import logging
 
 from flask import Response, Flask, render_template, request, abort
 
 from cryptoutils import HMACSHA256, AESCipher
 
 app_auth = Flask(__name__)
-
+logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s {%(module)s} [%(funcName)s] %(message)s', datefmt='%Y-%m-%d,%H:%M:%S', level=logging.INFO)
 
 try:
     with open("config.json") as f:
