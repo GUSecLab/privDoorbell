@@ -2,6 +2,8 @@
 hostname.conf
 seed.conf
 *.key.json
+config.json
+hostname.txt
 
 
 # Built application files
