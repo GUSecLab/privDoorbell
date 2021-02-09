@@ -7,6 +7,7 @@ from flask import Response, Flask, render_template, request, abort
 
 from cryptoutils import HMACSHA256, AESCipher
 
+
 logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s {%(module)s} [%(funcName)s] %(message)s', datefmt='%Y-%m-%d,%H:%M:%S', level=logging.INFO)
 app_auth = Flask(__name__)
 
