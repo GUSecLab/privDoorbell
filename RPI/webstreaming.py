@@ -12,6 +12,7 @@ import time
 from random import SystemRandom
 import json
 import re
+import socket
 
 import imutils
 from imutils.video import VideoStream
@@ -313,11 +314,35 @@ def generate():
         yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
 
 
+def simpleTCPPush():
+    global notification_flag
+    port = 8090
+    s = socket.socket()
+    s.bind(('', port))
+
+    s.listen(5)
+    try:
+        while True:
+            c, addr = s.accept()
+            while True:
+                data = c.recv(1024)
+                if not data:
+                    break
+                c.sendall(notification_flag)
+    except:
+        print("Socket Interrupt.")
+    
+                
+
+
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
 
     ap.add_argument("-f", "--frame-count", type=int, default=32)
     ap.add_argument("-d", "--detector", type=str, default='face')
+    ap.add_argument("-t", "--tcp-push", type=int, default=1)
     args = vars(ap.parse_args())
 
     # Multi-thread tasking
@@ -334,6 +359,12 @@ if __name__ == "__main__":
     dummy_thread = threading.Thread(target = send_dummy_packet)
     dummy_thread.daemon = True
     dummy_thread.start()
+
+    # The TCP push thread
+    if args['tcp_push']:
+        tcp_thread = threading.Thread(target = simpleTCPPush)
+        tcp_thread.daemon = True
+        tcp_thread.start()
 
     # GPIO
     doorbell_button.when_pressed = bell_button_callback
